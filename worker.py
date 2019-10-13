@@ -35,14 +35,12 @@ class Worker():
         return resp.split(" ")
 
     @staticmethod
-    def check_server(area: str, m: int):
+    def check_server(area: str, m=1):
         server, token = Worker.get_server(area, m)
         auth = ("Player", token)
-        if Worker.check_available(server, area, m, *auth):
-            loop = asyncio.new_event_loop()
-            phase = Parser.create_login_phase(*auth, skin=1, game_played=0)
-            return loop.run_until_complete(Worker._check_server(server, phase))
-        return None
+        loop = asyncio.new_event_loop()
+        phase = Parser.create_login_phase(*auth, skin=1, game_played=0)
+        return loop.run_until_complete(Worker._check_server(server, phase))
     
     @staticmethod
     def check_servers(m=1):
