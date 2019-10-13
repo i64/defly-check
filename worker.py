@@ -1,4 +1,4 @@
-from parser import Parser
+import parser
 import requests
 import websockets
 import asyncio
@@ -15,7 +15,7 @@ async def _check_server(server, auth):
         while True:
             try:
                 data = await websocket.recv()
-                res = Parser.parser(data, users, websocket)
+                res = parser.parser(data, users, websocket)
                 if res:
                     if res[0].get("available") != None:
                         for team in res:
@@ -39,7 +39,7 @@ def check_server(area: str, m=1):
     server, token = get_server(area, m)
     auth = ("Player", token)
     loop = asyncio.new_event_loop()
-    phase = Parser.create_login_phase(*auth, skin=1, game_played=0)
+    phase = parser.create_login_phase(*auth, skin=1, game_played=0)
     return loop.run_until_complete(_check_server(server, phase))
 
 
