@@ -6,7 +6,7 @@ import asyncio
 
 class Worker():
     GEN_ENDPOINT = "https://s.defly.io/?r={}&m={}"
-
+    REGION_LIST = ['EU1', 'TOK1', 'SA1', 'RU1', 'USE1', 'USW1', 'AU']
     @staticmethod
     async def _check_server(server, auth):
         async with websockets.connect(f"wss://{server.replace(':', '/')}") as websocket:
@@ -43,6 +43,15 @@ class Worker():
             phase = Parser.create_login_phase(*auth, skin=1, game_played=0)
             return loop.run_until_complete(Worker._check_server(server, phase))
         return None
+    
+    @staticmethod
+    def check_servers(m=1):
+        result = dict()
+        for region in Worker.REGION_LIST:
+            ## =: walrus walrus walrus walrus :=
+            _server = Worker.check_server(region, m=m)
+            result[region] = _server
+        return result
 
     @staticmethod
     def check_available(server: str, area: str, m: int, username: str, token: str):
