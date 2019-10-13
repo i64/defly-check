@@ -1,10 +1,6 @@
 from dataview import DataView
-from pprint import pprint
 
-import asyncio
 import websockets
-
-import struct
 
 
 class Parser():
