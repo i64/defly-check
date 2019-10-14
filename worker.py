@@ -15,7 +15,6 @@ async def _check_server(server, auth):
         while True:
             try:
                 data = await websocket.recv()
-                print(data)
                 res = parser.parser(data, users, websocket)
                 if res:
                     if res[0].get("available") != None:
