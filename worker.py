@@ -71,7 +71,7 @@ def check_servers(m=1, bot=False):
     for region in REGION_LIST:
         server, token = get_server(region, m)
         if server not in done_list:
-            result[region] = _get_server(server, token)
+            result[region] = _get_server(server, token, bot=bot)
         done_list.append(server)
     return result
 
