@@ -17,4 +17,4 @@ def checkTeams():
 
 
 if __name__ == "__main__":
-    app.run(int(os.environ.get('PORT', 33507)))
+    app.run(port=int(os.environ.get('PORT', 33507)))
