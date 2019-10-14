@@ -36,7 +36,10 @@ def parse_teams(_data: bytes):
     iter_counter = 3
     for _ in range(team_count):
         team_id = data.get_uint_32(iter_counter)
+
         map_percent = data.get_float_32(iter_counter + 4)
+        map_percent = 0 if map_percent < 0 else map_percent
+
         available = bool(data.get_uint_8(iter_counter + 8))
 
         member_limit = data.get_uint_8(iter_counter + 9)
