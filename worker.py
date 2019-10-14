@@ -36,18 +36,10 @@ def get_server(area: str, m: int):
     return resp.split(" ")
 
 
-def check_server(area: str, m=1):
+def check_server(area: str, m=1, port=None):
     server, token = get_server(area, m)
-    auth = ("Player", token)
-    loop = asyncio.new_event_loop()
-    phase = parser.create_login_phase(*auth, skin=1, game_played=0)
-    return loop.run_until_complete(_check_server(server, phase))
-
-
-def check_server_by_port(area: str, port=3005, m=1):
-    server, token = get_server(area, m)
-    server = f"{server.split(':')[0]}:{str(port)}"
-    # print(server)
+    if port is not None:
+        server = f"{server.split(':')[0]}:{str(port)}"
     auth = ("Player", token)
     loop = asyncio.new_event_loop()
     phase = parser.create_login_phase(*auth, skin=1, game_played=0)

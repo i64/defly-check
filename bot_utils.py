@@ -5,8 +5,13 @@ def printTable(tbl, borderHorizontal="-", borderVertical="|", borderCross="+"):
     f = borderVertical + borderVertical.join(" {:>%d} " % l for l in lengths) + borderVertical
     s = borderCross + borderCross.join(borderHorizontal * (l + 2) for l in lengths) + borderCross
 
-    result = s + "\n"
+    result = "```\n"
+    result += s + "\n"
     for row in tbl:
         result += f.format(*row) + "\n"
         result += s + "\n"
+    result += "```"
     return result
+
+def check_killist(killist, teams):
+    for team
