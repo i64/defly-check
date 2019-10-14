@@ -50,10 +50,10 @@ def check_server(region: str, m=1, port=None, bot=False):
     server, token = get_server(region, m)
     if port is not None:
         server = f"{server.split(':')[0]}:{str(port)}"
-    return _check_server(server, token, bot=bot)
+    return _get_server(server, token, bot=bot)
 
 
-def _check_server(server, token, bot=False):
+def _get_server(server, token, bot=False):
     auth = ("Player", token)
     phase = parser.create_login_phase(*auth, skin=1, game_played=0)
     if bot:  # im to lazy to fix it with asyncio server
@@ -71,7 +71,7 @@ def check_servers(m=1, bot=False):
     for region in REGION_LIST:
         server, token = get_server(region, m)
         if server not in done_list:
-            result[region] = _check_server(server, token)
+            result[region] = _get_server(server, token)
         done_list.append(server)
     return result
 
