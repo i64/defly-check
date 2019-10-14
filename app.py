@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+import os
 
 import worker
 
@@ -16,4 +17,4 @@ def checkTeams():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port="80", debug=True)
+    app.run(int(os.environ.get('PORT', 33507)))
