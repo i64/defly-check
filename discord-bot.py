@@ -1,6 +1,6 @@
 import discord
-from discord.ext import commands
 from os import getenv
+from discord.ext import commands
 
 import bot_utils
 import worker
@@ -31,6 +31,9 @@ async def check_servers(ctx):
     for region, server in servers.items():
         header = bot_utils.quote(region, f_format="glsl")
         data = bot_utils.quote(bot_utils.parse_server(server))
+        if len(data) > 1999:
+            print(len((data)))
+            print(((data)))
         await ctx.send(header)
         await ctx.send(data)
 

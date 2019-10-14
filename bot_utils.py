@@ -1,7 +1,7 @@
 import json
 
-TEAM_MAP = {2: "Blue", 3: "Red", 4: "Dark Green", 5: "Orange", 6: "Purple", 7: "Sky Blue", 8: "Green", 9: "Pink"}
-TEAM_NAMES = ["Blue", "Red", "Dark Green", "Orange", "Purple", "Sky Blue", "Green", "Pink"]
+TEAM_MAP = {2: "Blue", 3: "Red", 4: "D-Green", 5: "Orange", 6: "Purple", 7: "S-Blue", 8: "Green", 9: "Pink"}
+# TEAM_NAMES = ["Blue", "Red", "Dark Green", "Orange", "Purple", "Sky Blue", "Green", "Pink"]
 
 
 def get_table(tbl, borderHorizontal="-", borderVertical="|", borderCross="+"):
@@ -11,10 +11,13 @@ def get_table(tbl, borderHorizontal="-", borderVertical="|", borderCross="+"):
     f = borderVertical + borderVertical.join(" {:>%d} " % l for l in lengths) + borderVertical
     s = borderCross + borderCross.join(borderHorizontal * (l + 2) for l in lengths) + borderCross
 
-    result = s + "\n"
+    header = True
+    result = str()
     for row in tbl:
         result += f.format(*row) + "\n"
-        result += s + "\n"
+        if header:
+            result += s + "\n"
+            header = False
     return result
 
 
@@ -57,7 +60,7 @@ def quote(data: str, f_format=None):
 
 def parse_server(teams):
     parsen = list()
-    parsen.append(["Team Name", "Map Control", "Space", "Players"])
+    parsen.append(["Team", "Map %", "Ppl", "Players"])
     for team in teams:
         parsen.append(parse_team(team))
     return get_table(parsen)
