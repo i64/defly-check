@@ -21,9 +21,8 @@ def parse_user(_data):
 
     len_checker = 6 + 2 * len(username) + 4 + 4 - 1
     if data.length >= len_checker:
-        if data.get_int_32(len_checker) == 2:
+        if data.get_int_32(len_checker) == -1:
             return user_id
-
     return dict(user_id=user_id, username=username, skin_id=skin_id)
 
 

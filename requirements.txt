@@ -1,4 +1,5 @@
 Flask==1.0.2
 requests==2.20.0
-websockets==8.0.2
+discord
+websockets<7.0,>=6.0
 gunicorn
