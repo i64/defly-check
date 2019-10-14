@@ -10,6 +10,9 @@ app = Flask(__name__)
 def check_team(region):
     return jsonify(worker.check_server(region))
 
+@app.route("/api/check-team-port/<string:region>/<int:port>", methods=["GET"])
+def check_team_by_port(region, port):
+    return jsonify(worker.check_server_by_port(region, port))
 
 @app.route("/api/check-teams", methods=["GET"])
 def checkTeams():
