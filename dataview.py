@@ -1,6 +1,5 @@
 import struct
 
-
 class DataView:
     def __init__(self, array, bytes_per_element=1):
         if type(array) == bytes:
