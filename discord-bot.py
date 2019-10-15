@@ -47,8 +47,8 @@ async def search_player(ctx, *args):
     if username != "Player":
         _data = worker.search_player(username, bot=True)  # heroku neden walrnus desteklemiyorsun mk
         if _data:
-            await ctx.send("ya ya, he is online lets go kill him")
             header, server = _data
+            await ctx.send(f"ya ya, he is online lets go kill him: https://defly.io/#1-{header.replace('defly.io', '')}")
             await bot_utils.send_server(ctx, header, server)
         else:
             await ctx.send("no he is not online :(")
