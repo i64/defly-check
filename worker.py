@@ -4,11 +4,24 @@ import requests
 import threading
 import websockets
 
-
 GEN_ENDPOINT = "https://s.defly.io/?r={}&m={}"
 REGION_LIST = ["EU1", "TOK1", "SA1", "RU1", "USE1", "USW1", "AU"]
 
 trd_ss = None
+
+
+def set_interval(func, sec):
+    def func_wrapper():
+        set_interval(func, sec)
+        func()
+
+    t = threading.Timer(sec, func_wrapper)
+    t.start()
+    return t
+
+
+def re_heroku():
+    requests.get("https://defly-check.herokuapp.com/")
 
 
 async def _check_server(server, auth):
