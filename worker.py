@@ -116,7 +116,7 @@ def check_servers(port=None, m=1, bot=False):
 def search_player(username: str, bot=False):
     if username != "Player":
         for port in KNOWN_PORTS:
-            for uri, server in _gen_check_servers(bot=bot, port):
+            for uri, server in _gen_check_servers(bot=bot, port=port):
                 if server:
                     for team in server:
                         if list(filter(lambda member: member["username"] == username, team["members"])):
