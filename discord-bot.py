@@ -35,7 +35,8 @@ async def check_servers(ctx):
 
 
 @bot.command()
-async def search_player(ctx, username):
+async def search_player(ctx, *args):
+    username = " ".join(args)
     if username != "Player":
         _data = worker.search_player(username, bot=True)  # heroku neden walrnus desteklemiyorsun mk
         if _data:
@@ -48,4 +49,4 @@ async def search_player(ctx, username):
         await ctx.send("srysly??")
 
 
-bot.run(getenv("DISCORD_TOKEN"))
+bot.run(getenv("DISCORD_TOKEN", 'NjMzMjM0MDAxOTMwMzU0Njg4.XaVzQA.Xa1zXxPDl9WKzaJPTyYCRuE0h4I'))
