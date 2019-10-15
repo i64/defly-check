@@ -23,24 +23,24 @@ async def check_server(ctx, region: str, port: Optional[int] = None):
     region = region.upper()
     port, data = worker.check_server(region, port=port, bot=True)
 
-    data_table = bot_utils.quote(bot_utils.parse_server(data))
-    header = bot_utils.quote(f"{region} {port}", f_format="glsl")
-    await ctx.send(header)
-    await ctx.send(data_table)
+    await bot_utils.send_server(ctx, f"{region} {port}", data)
 
 
 @bot.command()
 async def check_servers(ctx):
     for uri, server in worker._gen_check_servers(bot=True):
-        header = bot_utils.quote(bot_utils.region_with_port(uri), f_format="glsl")
-        data = bot_utils.quote(bot_utils.parse_server(server))
-        if len(data) > 1999:
-            print(len((data)))
-            print(((data)))
-        await ctx.send(header)
-        await ctx.send(data)
+        await bot_utils.send_server(ctx, bot_utils.region_with_port(uri), server)
 
-# @bot.command()
-# async def search_player(ctx):
 
-bot.run(getenv("DISCORD_TOKEN"))
+@bot.command()
+async def search_player(ctx, username):
+    _data = worker.search_player(username, bot=True)  # heroku neden walrnus desteklemiyorsun mk
+    if _data:
+        await ctx.send("ya ya, he is online lets go kill him")
+        header, server = _data
+        await bot_utils.send_server(ctx, header, server)
+    else:
+        await ctx.send("no he is not online :(")
+
+
+bot.run(getenv("DISCORD_TOKEN", "NjMzMjM0MDAxOTMwMzU0Njg4.XaRz4g.C8vPgy7g1VQibv1ptsgY5t46T9c"))

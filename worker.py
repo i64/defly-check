@@ -50,10 +50,11 @@ def check_server(region: str, m=1, port=None, bot=False):
     server, token = get_server(region, m)
     if port is not None:
         server = f"{server.split(':')[0]}:{str(port)}"
-    _result  = _get_server(server, token, bot=bot)
+    _result = _get_server(server, token, bot=bot)
     if bot:
-        return (server.split(':')[1], _result)
+        return (server.split(":")[1], _result)
     return _result
+
 
 def _get_server(server, token, bot=False):
     auth = ("Player", token)
@@ -67,7 +68,6 @@ def _get_server(server, token, bot=False):
     return trd_ss
 
 
-
 def _gen_check_servers(m=1, bot=False):
     done_list = list()
     for region in REGION_LIST:
@@ -76,18 +76,23 @@ def _gen_check_servers(m=1, bot=False):
             done_list.append(server)
             yield (server, _get_server(server, token, bot=bot))
 
+
 def check_servers(m=1, bot=False):
     result = dict()
     for uri, server in _gen_check_servers(bot=bot):
-        region, port =uri.split(':')
+        region, port = uri.split(":")
         result[f"{region} {port}"] = server
     return result
 
-# def search_player(username, bot=False):
-#     for uri, server in _gen_check_servers(bot=bot):
-#         region, port = uri.split(':')
-#         result[f"{region} {port}"] = server
-#     return result
+
+def search_player(username, bot=False):
+    for uri, server in _gen_check_servers(bot=bot):
+        for team in server:
+            if list(filter(lambda member: member["username"] == username, team["members"])):
+                return (uri.replace(".defly.io/", ":"), server)
+    return None
+
+
 def check_available(server: str, region: str, m: int, username: str, token: str):
     params = {"r": region, "m": m, "s": token, "p": server.replace("defly.io", ""), "u": username}
     response = requests.post("http://s.defly.io/", params=params, verify=False, timeout=2)

@@ -65,6 +65,12 @@ def parse_server(teams):
         parsen.append(parse_team(team))
     return get_table(parsen)
 
+
 def region_with_port(uri):
-    region, port =uri.split(':')
-    return f"{region}/{port}" 
+    region, port = uri.split(".defly.io:")
+    return f"{region} {port}"
+
+
+async def send_server(ctx, header, server):
+    await ctx.send(quote(header, f_format="glsl"))
+    await ctx.send(quote(parse_server(server)))
