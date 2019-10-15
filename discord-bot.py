@@ -49,4 +49,4 @@ async def search_player(ctx, *args):
         await ctx.send("srysly??")
 
 
-bot.run(getenv("DISCORD_TOKEN", 'NjMzMjM0MDAxOTMwMzU0Njg4.XaVzQA.Xa1zXxPDl9WKzaJPTyYCRuE0h4I'))
+bot.run(getenv("DISCORD_TOKEN"))
