@@ -36,13 +36,16 @@ async def check_servers(ctx):
 
 @bot.command()
 async def search_player(ctx, username):
-    _data = worker.search_player(username, bot=True)  # heroku neden walrnus desteklemiyorsun mk
-    if _data:
-        await ctx.send("ya ya, he is online lets go kill him")
-        header, server = _data
-        await bot_utils.send_server(ctx, header, server)
+    if username != "Player":
+        _data = worker.search_player(username, bot=True)  # heroku neden walrnus desteklemiyorsun mk
+        if _data:
+            await ctx.send("ya ya, he is online lets go kill him")
+            header, server = _data
+            await bot_utils.send_server(ctx, header, server)
+        else:
+            await ctx.send("no he is not online :(")
     else:
-        await ctx.send("no he is not online :(")
+        await ctx.send("srysly??")
 
 
 bot.run(getenv("DISCORD_TOKEN"))
