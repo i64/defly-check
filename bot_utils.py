@@ -1,7 +1,7 @@
 import json
 
-REGIONS_LIST = ["EU1", "TOK1", "SA1", "RU1", "USE1", "USW1", "AU"] # evet iki defa tanimladim cunku kiroyum kiroooo
-REGIONS_STRING = ", ".join(REGION_LIST)
+REGIONS_LIST = ["EU1", "TOK1", "SA1", "RU1", "USE1", "USW1", "AU"]  # evet iki defa tanimladim cunku kiroyum kiroooo
+REGIONS_STRING = ", ".join(REGIONS_LIST)
 TEAM_MAP = {2: "Blue", 3: "Red", 4: "D-Green", 5: "Orange", 6: "Purple", 7: "S-Blue", 8: "Green", 9: "Pink"}
 # TEAM_NAMES = ["Blue", "Red", "Dark Green", "Orange", "Purple", "Sky Blue", "Green", "Pink"]
 
