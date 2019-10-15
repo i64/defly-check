@@ -43,4 +43,4 @@ async def search_player(ctx, username):
         await ctx.send("no he is not online :(")
 
 
-bot.run(getenv("DISCORD_TOKEN", "NjMzMjM0MDAxOTMwMzU0Njg4.XaRz4g.C8vPgy7g1VQibv1ptsgY5t46T9c"))
+bot.run(getenv("DISCORD_TOKEN"))
