@@ -33,7 +33,7 @@ async def _check_server(server, auth):
                 break
 
 
-def get_server(region: str, m: int):
+def get_server(region: str, m=1):
     resp = requests.get(GEN_ENDPOINT.format(region, m)).text
     return resp.split(" ")
 
@@ -50,8 +50,10 @@ def check_server(region: str, m=1, port=None, bot=False):
     server, token = get_server(region, m)
     if port is not None:
         server = f"{server.split(':')[0]}:{str(port)}"
-    return _get_server(server, token, bot=bot)
-
+    _result  = _get_server(server, token, bot=bot)
+    if bot:
+        return (server.split(':')[1], _result)
+    return _result
 
 def _get_server(server, token, bot=False):
     auth = ("Player", token)
@@ -65,17 +67,27 @@ def _get_server(server, token, bot=False):
     return trd_ss
 
 
-def check_servers(m=1, bot=False):
-    result = dict()
+
+def _gen_check_servers(m=1, bot=False):
     done_list = list()
     for region in REGION_LIST:
-        server, token = get_server(region, m)
+        server, token = get_server(region)
         if server not in done_list:
-            result[region] = _get_server(server, token, bot=bot)
-        done_list.append(server)
+            done_list.append(server)
+            yield (server, _get_server(server, token, bot=bot))
+
+def check_servers(m=1, bot=False):
+    result = dict()
+    for uri, server in _gen_check_servers(bot=bot):
+        region, port =uri.split(':')
+        result[f"{region} {port}"] = server
     return result
 
-
+# def search_player(username, bot=False):
+#     for uri, server in _gen_check_servers(bot=bot):
+#         region, port = uri.split(':')
+#         result[f"{region} {port}"] = server
+#     return result
 def check_available(server: str, region: str, m: int, username: str, token: str):
     params = {"r": region, "m": m, "s": token, "p": server.replace("defly.io", ""), "u": username}
     response = requests.post("http://s.defly.io/", params=params, verify=False, timeout=2)

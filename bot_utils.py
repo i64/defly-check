@@ -64,3 +64,7 @@ def parse_server(teams):
     for team in teams:
         parsen.append(parse_team(team))
     return get_table(parsen)
+
+def region_with_port(uri):
+    region, port =uri.split(':')
+    return f"{region}/{port}" 
