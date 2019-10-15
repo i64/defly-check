@@ -115,11 +115,12 @@ def check_servers(port=None, m=1, bot=False):
 
 def search_player(username: str, bot=False):
     if username != "Player":
-        for uri, server in _gen_check_servers(bot=bot):
-            if server:
-                for team in server:
-                    if list(filter(lambda member: member["username"] == username, team["members"])):
-                        return (uri.replace(".defly.io/", ":"), server)
+        for port in KNOWN_PORTS:
+            for uri, server in _gen_check_servers(bot=bot, port):
+                if server:
+                    for team in server:
+                        if list(filter(lambda member: member["username"] == username, team["members"])):
+                            return (uri.replace(".defly.io/", ":"), server)
     return None
 
 
