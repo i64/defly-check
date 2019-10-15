@@ -28,9 +28,10 @@ async def check_server(ctx, region: str, port: Optional[int] = None):
 
 
 @bot.command()
-async def check_servers(ctx):
-    for uri, server in worker._gen_check_servers(bot=True):
-        await bot_utils.send_server(ctx, bot_utils.region_with_port(uri), server)
+async def check_servers(ctx, port: Optional[int] = None):
+    for uri, server in worker._gen_check_servers(bot=True, port=port):
+        if server:
+            await bot_utils.send_server(ctx, bot_utils.region_with_port(uri), server)
 
 
 @bot.command()

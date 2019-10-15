@@ -74,5 +74,5 @@ def region_with_port(uri):
 
 
 async def send_server(ctx, header, server):
-    await ctx.send(quote(header, f_format="glsl"))
-    await ctx.send(quote(parse_server(server)))
+    _data = f"`{header}` {quote(parse_server(server))}"
+    await ctx.send(_data)
