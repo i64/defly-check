@@ -25,6 +25,9 @@ async def check_server(ctx, region: str, port: Optional[int] = None):
             for port in worker.KNOWN_PORTS:
                 port, data = worker.check_server(region, port=port, bot=True)
                 await bot_utils.send_server(ctx, f"{region} {port}", data)
+        else:
+            port, data = worker.check_server(region, port=port, bot=True)
+            await bot_utils.send_server(ctx, f"{region} {port}", data)
     else:
         await ctx.send(f"hey, hey. check the region please {bot_utils.REGIONS_STRING}")
 
@@ -33,9 +36,10 @@ async def check_server(ctx, region: str, port: Optional[int] = None):
 async def check_servers(ctx, port: Optional[int] = None):
     if not port:
         for port in worker.KNOWN_PORTS:
-            for uri, server in worker._gen_check_servers(bot=True, port=port):
-                if server:
-                    await bot_utils.send_server(ctx, bot_utils.region_with_port(uri), server)
+            await bot_utils.check_servers(ctx, port)
+    else: 
+        await bot_utils.check_servers(ctx, port)
+        
 
 
 @bot.command()
