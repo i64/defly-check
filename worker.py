@@ -8,6 +8,7 @@ from typing import Optional
 
 GEN_ENDPOINT = "https://s.defly.io/?r={}&m={}"
 REGION_LIST = ["EU1", "TOK1", "SA1", "RU1", "USE1", "USW1", "AU"]
+KNOWN_PORTS = [3005, 3015]
 
 trd_ss = None
 
