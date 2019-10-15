@@ -1,5 +1,5 @@
 import json
-import worker 
+import worker
 
 REGIONS_LIST = ["EU1", "TOK1", "SA1", "RU1", "USE1", "USW1", "AU"]  # evet iki defa tanimladim cunku kiroyum kiroooo
 REGIONS_STRING = ", ".join(REGIONS_LIST)
@@ -78,8 +78,8 @@ async def send_server(ctx, header, server):
     _data = f"`{header}` {quote(parse_server(server))}"
     await ctx.send(_data)
 
-async def check_servers(ctx, port: Optional[int] = None):
+
+async def check_servers(ctx, port=None):
     for uri, server in worker._gen_check_servers(bot=True, port=port):
         if server:
             await send_server(ctx, region_with_port(uri), server)
-        

@@ -37,9 +37,8 @@ async def check_servers(ctx, port: Optional[int] = None):
     if not port:
         for port in worker.KNOWN_PORTS:
             await bot_utils.check_servers(ctx, port)
-    else: 
+    else:
         await bot_utils.check_servers(ctx, port)
-        
 
 
 @bot.command()
