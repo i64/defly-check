@@ -21,9 +21,11 @@ async def on_ready():
 @bot.command()
 async def check_server(ctx, region: str, port: Optional[int] = None):
     region = region.upper()
-    port, data = worker.check_server(region, port=port, bot=True)
-
-    await bot_utils.send_server(ctx, f"{region} {port}", data)
+    if region in bot_utils.REGIONS_LIST:
+        port, data = worker.check_server(region, port=port, bot=True)
+        await bot_utils.send_server(ctx, f"{region} {port}", data)
+    else:
+        await ctx.send(f"hey, hey. check the region please {bot_utils.REGIONS_STRING}")
 
 
 @bot.command()
