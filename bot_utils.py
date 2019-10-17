@@ -115,8 +115,8 @@ async def seek_angels(ctx, args):
 
     if f and username.endswith("el") or username.endswith("al"):
         result = "yup it's an angel from -el/al family"
-
-    else:
+        f = False
+    elif f:
         result = f"no {username} is not -.-"
 
     return await ctx.send(result)
