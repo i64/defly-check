@@ -41,12 +41,14 @@ def get_table(tbl: list, borderHorizontal="-", borderVertical="|", borderCross="
 
 
 async def check_killist(ctx, kill_list: list):
+    flag = False
     for members, header, server in worker._gen_check_killist(kill_list, bot=True):
         await ctx.send(
             f"ya ya, {' '.join(list(map(lambda x: f'`{x}`', members)))} {'are' if len(members) > 1 else 'is'} online lets go kill him: https://defly.io/#1-{header.replace('defly.io', '')}"
         )
         await send_server(ctx, header, server)
-    else:
+        flag = True
+    if flag:
         await ctx.send("all of them are offline -.-")
 
 
@@ -129,7 +131,6 @@ async def seek_angels(ctx, args):
                     fuzz_angels.append((angel.upper(), _ratio))
         levenshtein_angels.sort(key=lambda angel: angel[0], reverse=True)
         fuzz_angels.sort(key=lambda angel: angel[0], reverse=True)
-    
 
         for angel in levenshtein_angels:
             result += f"maybe you made a typo, did you mean: {angel[0]}\n"
