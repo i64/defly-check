@@ -5,3 +5,4 @@ discord
 gunicorn
 fuzzywuzzy
 python-Levenshtein
+Distance

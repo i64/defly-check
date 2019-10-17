@@ -6,6 +6,8 @@ from typing import Optional
 from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 
+import distance
+
 ## bot utils is not a class cuz ctx is connection object
 
 ANGEL_NAMES = json.load(open("angels.json"))
@@ -39,11 +41,15 @@ def get_table(tbl: list, borderHorizontal="-", borderVertical="|", borderCross="
 
 
 async def check_killist(ctx, kill_list: list):
+    flag = False
     for members, header, server in worker._gen_check_killist(kill_list, bot=True):
         await ctx.send(
             f"ya ya, {' '.join(list(map(lambda x: f'`{x}`', members)))} {'are' if len(members) > 1 else 'is'} online lets go kill him: https://defly.io/#1-{header.replace('defly.io', '')}"
         )
         await send_server(ctx, header, server)
+        flag = True
+    if flag:
+        await ctx.send("allf of them are offline -.-")
 
 
 def load_killist():
@@ -104,22 +110,36 @@ async def seek_angels(ctx, args):
     username = "".join(args)
     username = username.upper()
     result = str()
-    f = True
+
     if username == "AZAZEL" or username == "LUCIFER":
         result = "he is not an angel anymore :("
     elif username in ANGEL_NAMES:
         result = f"ye {username} is a an angel"
     else:
-        for angel in ANGEL_NAMES:
-            if fuzz.partial_ratio(username, angel) >= 80:
-                result += f"maybe he is an angel, its similar to {angel}\n"
-                f = False
+        fuzz_angels = list()
+        levenshtein_angels = list()
 
-        if f and username.endswith("el") or username.endswith("al"):
-            result = "yup it's an angel from -el/al family"
-            f = False
-        elif f:
-            result = f"no {username} is not -.-"
+        for angel in ANGEL_NAMES:
+            _ratio = fuzz.partial_ratio(username, angel)
+            if _ratio >= 80:
+                fuzz_angels.append((angel.upper(), _ratio))
+            _ratio = distance.levenshtein(username, angel)
+            if _ratio < 3:
+                levenshtein_angels.append((angel.upper(), _ratio))
+        levenshtein_angels.sort(key=lambda angel: angel[0], reverse=True)
+        fuzz_angels = list(set(levenshtein_angels) ^ set(fuzz_angels))
+        fuzz_angels.sort(key=lambda angel: angel[0], reverse=True)
+
+        for angel, _ratio in levenshtein_angels:
+            result += f"maybe you made a type, did you mean {angel}?\n"
+        for angel, _ratio in fuzz_angels:
+            result += f"maybe he is an angel, its similar to {angel}\n"
+
+        if not fuzz_angels and not levenshtein_angels:
+            if username.endswith("el") or username.endswith("al"):
+                result = "yup it's an angel from -el/al family"
+            elif fuzz_angels:
+                result = f"no {username} is not -.-"
     return await ctx.send(result)
 
 
