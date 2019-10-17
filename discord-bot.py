@@ -46,8 +46,7 @@ async def check_list(ctx):
 
 @bot.command()
 async def get_list(ctx):
-    await ctx.send(" ".join(list(map(lambda x: f'`{x}`', kill_list)))
-
+    await ctx.send(" ".join(list(map(lambda x: f'`{x}`', kill_list))))
 
 @bot.command()
 async def add_player(ctx, *args):
