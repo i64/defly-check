@@ -3,9 +3,6 @@ import os
 
 import worker
 
-if os.getenv("IS_HEROKU"):
-    worker.set_interval(worker.re_heroku, 60 * 59)
-
 app = Flask(__name__)
 
 

@@ -13,20 +13,6 @@ KNOWN_PORTS = [3005, 3015]
 trd_ss = None
 
 
-def set_interval(func, sec):
-    def func_wrapper():
-        set_interval(func, sec)
-        func()
-
-    t = threading.Timer(sec, func_wrapper)
-    t.start()
-    return t
-
-
-def re_heroku():
-    requests.get("https://defly-check.herokuapp.com/")
-
-
 async def _check_server(server: str, auth: bytes):
     try:
         async with websockets.connect(f"wss://{server.replace(':', '/')}") as websocket:
