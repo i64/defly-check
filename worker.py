@@ -141,6 +141,7 @@ def check_available(server: str, region: str, m: int, username: str, token: str)
 
     return not response.text.startswith("ER")
 
+
 def _gen_check_killist(kill_list: list, bot=None):
     for uri, server in _gen_check_servers(bot=bot):
         members = get_server_members(server)
