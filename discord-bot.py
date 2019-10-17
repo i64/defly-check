@@ -80,6 +80,7 @@ async def help(ctx):
     embed.add_field(name="!get_list", value="returns the list", inline=False)
 
     embed.add_field(name="!search_player PLAYER_NAME", value="checks if the player is online", inline=False)
+    embed.add_field(name="!is_angel username", value="idk, just angelic name checker", inline=False)
 
     embed.add_field(name="!help", value="Gives this message", inline=False)
     await ctx.send(embed=embed)
