@@ -131,7 +131,7 @@ async def seek_angels(ctx, args):
         fuzz_angels.sort(key=lambda angel: angel[0], reverse=True)
 
         for angel, _ratio in levenshtein_angels:
-            result += f"maybe you made a type, did you mean {angel}?\n"
+            result += f"maybe you made a typo, did you mean {angel}?\n"
         for angel, _ratio in fuzz_angels:
             result += f"maybe he is an angel, its similar to {angel}\n"
 
