@@ -39,12 +39,12 @@ async def search_player(ctx, *args):
 
 
 @bot.command()
-async def check_players(ctx):
+async def check_list(ctx):
     await bot_utils.check_killist(ctx, kill_list)
 
 
 @bot.command()
-async def get_players(ctx):
+async def get_list(ctx):
     await ctx.send(" ".join(kill_list))
 
 
@@ -52,11 +52,12 @@ async def get_players(ctx):
 async def add_player(ctx, *args):
     username = " ".join(args)
     if username:
-        if username not  in kill_list:
-            kill_list.append()
-            await bot_utils.save_killist(kill_list)
+        if username not in kill_list:
+            kill_list.append(username)
+            bot_utils.save_killist(kill_list)
+            await ctx.send(f"{username} is in tracklist now")
         else:
-            await ctx.send("he is already in the killist")
+            await ctx.send("he is already in the tracklist")
     else:
         await bot_utils.error(ctx)
 @bot.command()
@@ -66,9 +67,9 @@ async def help(ctx):
     embed.add_field(name="!check_server REGION [PORT]", value="checks server", inline=False)
     embed.add_field(name="!check_servers [PORT]", value="checks all active servers", inline=False)
     
-    embed.add_field(name="!check_players ", value="check the player list", inline=False)
+    embed.add_field(name="!check_list ", value="check the player list", inline=False)
     embed.add_field(name="!add_player PLAYER_NAME", value="adds the player into the list", inline=False)
-    embed.add_field(name="!get_players", value="returns the list", inline=False)
+    embed.add_field(name="!get_list", value="returns the list", inline=False)
 
     embed.add_field(name="!search_player PLAYER_NAME", value="checks if the player is online", inline=False)
 

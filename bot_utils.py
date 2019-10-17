@@ -12,6 +12,8 @@ TEAM_MAP = {2: "Blue", 3: "Red", 4: "D-Green", 5: "Orange", 6: "Purple", 7: "S-B
 
 # TEAM_NAMES = ["Blue", "Red", "Dark Green", "Orange", "Purple", "Sky Blue", "Green", "Pink"]
 
+async def error(ctx):
+    ctx.send("wrong command usage please check `!help` command")
 
 def get_table(tbl: list, borderHorizontal="-", borderVertical="|", borderCross="+"):
     cols = [list(x) for x in zip(*tbl)]
@@ -33,7 +35,7 @@ def get_table(tbl: list, borderHorizontal="-", borderVertical="|", borderCross="
 async def check_killist(ctx, kill_list: list):
     for members, header, server in worker._gen_check_killist(kill_list, bot=True):
             await ctx.send(
-                f"ya ya,{' '.join(members)} {'are' if len(members) else 'is'} online lets go kill him: https://defly.io/#1-{header.replace('defly.io', '')}"
+                f"ya ya, {' '.join(members)} {'are' if len(members) > 1 else 'is'} online lets go kill him: https://defly.io/#1-{header.replace('defly.io', '')}"
             )
             await send_server(ctx, header, server)
 
@@ -44,8 +46,10 @@ def load_killist():
 
 
 def save_killist(killist):
-    file = open("killist.json")
-    return json.dump(file)
+    file = open("killist.json", 'w')
+    json.dump(killist, file)
+    if not file.closed:
+        file.close()
 
 
 def parse_team(team: dict):
@@ -129,5 +133,3 @@ async def check_servers(ctx, port: Optional[int] = None):
     else:
         await _check_servers(ctx, port)
 
-async def error(ctx):
-    ctx.send("wrong command usage please check `!help` command")
