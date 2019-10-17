@@ -113,14 +113,25 @@ def check_servers(port=None, m=1, bot=False):
     return result
 
 
+def get_server_members(server):
+    result = list()
+    if server:
+        for team in server:
+            result.extend([member["username"] for member in team["members"]])
+    return result
+
+
+def get_team_members(team):
+    return [member["username"] for member in team["members"]]
+
+
 def search_player(username: str, bot=False):
     if username != "Player":
         for port in KNOWN_PORTS:
             for uri, server in _gen_check_servers(bot=bot, port=port):
-                if server:
-                    for team in server:
-                        if list(filter(lambda member: member["username"] == username, team["members"])):
-                            return (uri.replace(".defly.io/", ":"), server)
+                members = get_server_members(server)
+                if username in members:
+                    return (uri.replace(".defly.io/", ":"), server)
     return None
 
 
@@ -129,3 +140,19 @@ def check_available(server: str, region: str, m: int, username: str, token: str)
     response = requests.post("http://s.defly.io/", params=params, verify=False, timeout=2)
 
     return not response.text.startswith("ER")
+
+def _gen_check_killist(kill_list: list, bot=None):
+    for uri, server in _gen_check_servers(bot=bot):
+        members = get_server_members(server)
+        online_members = set(kill_list).intersection(members)
+        if online_members:
+            yield (online_members, uri.replace(".defly.io/", ":"), server)
+
+    # for username in kill_list:
+    #     _data = .search_player(username, bot=True)  # heroku neden walrnus desteklemiyorsun mk
+    #     if _data:
+    #         header, server = _data
+    #         await ctx.send(
+    #             f"ya ya,{username} is online lets go kill him: https://defly.io/#1-{header.replace('defly.io', '')}"
+    #         )
+    #         await send_server(ctx, header, server)

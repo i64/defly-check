@@ -8,6 +8,9 @@ import worker
 
 bot = commands.Bot(command_prefix="!")
 
+kill_list = bot_utils.load_killist()
+
+bot.remove_command('help')
 
 @bot.event
 async def on_ready():
@@ -19,41 +22,48 @@ async def on_ready():
 
 @bot.command()
 async def check_server(ctx, region: str, port: Optional[int] = None):
-    region = region.upper()
-    if region in bot_utils.REGIONS_LIST:
-        if not port:
-            for port in worker.KNOWN_PORTS:
-                port, data = worker.check_server(region, port=port, bot=True)
-                await bot_utils.send_server(ctx, f"{region} {port}", data)
-        else:
-            port, data = worker.check_server(region, port=port, bot=True)
-            await bot_utils.send_server(ctx, f"{region} {port}", data)
-    else:
-        await ctx.send(f"hey, hey. check the region please {bot_utils.REGIONS_STRING}")
+    await bot_utils.check_server(ctx, region, port=port)
 
 
 @bot.command()
 async def check_servers(ctx, port: Optional[int] = None):
-    if not port:
-        for port in worker.KNOWN_PORTS:
-            await bot_utils.check_servers(ctx, port)
-    else:
-        await bot_utils.check_servers(ctx, port)
+    await bot_utils.check_servers(ctx, port=port)
 
 
 @bot.command()
 async def search_player(ctx, *args):
-    username = " ".join(args)
-    if username != "Player":
-        _data = worker.search_player(username, bot=True)  # heroku neden walrnus desteklemiyorsun mk
-        if _data:
-            header, server = _data
-            await ctx.send(f"ya ya, he is online lets go kill him: https://defly.io/#1-{header.replace('defly.io', '')}")
-            await bot_utils.send_server(ctx, header, server)
-        else:
-            await ctx.send("no he is not online :(")
-    else:
-        await ctx.send("srysly??")
+    await bot_utils.search_player(ctx, args)
 
+
+@bot.command()
+async def check_players(ctx):
+    await bot_utils.check_killist(ctx, kill_list)
+
+
+@bot.command()
+async def get_players(ctx):
+    await ctx.send(" ".join(kill_list))
+
+
+@bot.command()
+async def add_player(ctx, *args):
+    kill_list.append(" ".join(args))
+    await bot_utils.save_killist(kill_list)
+
+@bot.command()
+async def help(ctx):
+    embed = discord.Embed()
+
+    embed.add_field(name="!check_server REGION [PORT]", value="checks server", inline=False)
+    embed.add_field(name="!check_servers [PORT]", value="checks all active servers", inline=False)
+    
+    embed.add_field(name="!check_players ", value="check the player list", inline=False)
+    embed.add_field(name="!add_player PLAYER_NAME", value="adds the player into the list", inline=False)
+    embed.add_field(name="!get_players", value="returns the list", inline=False)
+
+    embed.add_field(name="!search_player PLAYER_NAME", value="checks if the player is online", inline=False)
+
+    embed.add_field(name="!help", value="Gives this message", inline=False)
+    await ctx.send(embed=embed)
 
 bot.run(getenv("DISCORD_TOKEN"))
