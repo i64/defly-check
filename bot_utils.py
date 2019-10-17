@@ -106,7 +106,7 @@ async def search_player(ctx, *args):
         else:
             await ctx.send("srysly??")
     else:
-        await ctx.send("wrong command")
+        await error(ctx)
 
 async def check_server(ctx, region: str, port: Optional[int] = None):
     region = region.upper()
@@ -129,3 +129,5 @@ async def check_servers(ctx, port: Optional[int] = None):
     else:
         await _check_servers(ctx, port)
 
+async def error(ctx):
+    ctx.send("wrong command usage please check `!help` command")

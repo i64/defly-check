@@ -22,7 +22,10 @@ async def on_ready():
 
 @bot.command()
 async def check_server(ctx, region: str, port: Optional[int] = None):
-    await bot_utils.check_server(ctx, region, port=port)
+    if region:
+        await bot_utils.check_server(ctx, region, port=port)
+    else:
+        await bot_utils.error(ctx)
 
 
 @bot.command()
@@ -47,9 +50,15 @@ async def get_players(ctx):
 
 @bot.command()
 async def add_player(ctx, *args):
-    kill_list.append(" ".join(args))
-    await bot_utils.save_killist(kill_list)
-
+    username = " ".join(args)
+    if username:
+        if username not  in kill_list:
+            kill_list.append()
+            await bot_utils.save_killist(kill_list)
+        else:
+            await ctx.send("he is already in the killist")
+    else:
+        await bot_utils.error(ctx)
 @bot.command()
 async def help(ctx):
     embed = discord.Embed()
