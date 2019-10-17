@@ -3,8 +3,12 @@ import worker
 
 from typing import Optional
 
+from fuzzywuzzy import fuzz
+from fuzzywuzzy import process
+
 ## bot utils is not a class cuz ctx is connection object
 
+ANGEL_NAMES = json.load(open("angels.json"))
 REGIONS_LIST = ["EU1", "TOK1", "SA1", "RU1", "USE1", "USW1", "AU"]  # evet iki defa tanimladim cunku kiroyum kiroooo
 REGIONS_STRING = ", ".join(REGIONS_LIST)
 
@@ -96,7 +100,26 @@ async def _check_servers(ctx, port=None):
             await send_server(ctx, region_with_port(uri), server)
 
 
-async def search_player(ctx, *args):
+async def seek_angels(ctx, args):
+    username = "".join(args)
+    username = username.upper()
+    result = str()
+    f = True
+    if username.upper() == "AZAZEL" or username.upper() == "LUCIFER":
+        return await ctx.send("he is not an angel anymore :(")
+
+    for angel in ANGEL_NAMES:
+        if fuzz.partial_ratio(username, angel) >= 80:
+            result += f"maybe he is an angel, its similar to {angel}\n"
+            f = False
+
+    if f and username.endswith("el") or username.endswith("al"):
+        result = "yup it's an angel from -el/al family"
+    
+    return await ctx.send(result)
+
+
+async def search_player(ctx, args):
     username = " ".join(args)
     if username:
         if username != "Player":

@@ -3,3 +3,5 @@ requests==2.20.0
 websockets<7.0,>=6.0
 discord
 gunicorn
+fuzzywuzzy
+python-Levenshtein

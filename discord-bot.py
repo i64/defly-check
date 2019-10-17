@@ -40,13 +40,19 @@ async def search_player(ctx, *args):
 
 
 @bot.command()
+async def is_angel(ctx, *args):
+    await bot_utils.seek_angels(ctx, args)
+
+
+@bot.command()
 async def check_list(ctx):
     await bot_utils.check_killist(ctx, kill_list)
 
 
 @bot.command()
 async def get_list(ctx):
-    await ctx.send(" ".join(list(map(lambda x: f'`{x}`', kill_list))))
+    await ctx.send(" ".join(list(map(lambda x: f"`{x}`", kill_list))))
+
 
 @bot.command()
 async def add_player(ctx, *args):
