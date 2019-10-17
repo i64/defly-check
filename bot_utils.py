@@ -120,20 +120,23 @@ async def seek_angels(ctx, args):
         levenshtein_angels = list()
 
         for angel in ANGEL_NAMES:
-            _ratio = fuzz.partial_ratio(username, angel)
-            if _ratio >= 80:
-                fuzz_angels.append((angel.upper(), _ratio))
+            levenshtein_flag = True
             _ratio = distance.levenshtein(username, angel)
             if _ratio < 3:
                 levenshtein_angels.append((angel.upper(), _ratio))
+                levenshtein_flag = False
+            if levenshtein_flag:
+                _ratio = fuzz.partial_ratio(username, angel)
+                if _ratio >= 80:
+                    fuzz_angels.append((angel.upper(), _ratio))
         levenshtein_angels.sort(key=lambda angel: angel[0], reverse=True)
-        fuzz_angels = list(set(levenshtein_angels) ^ set(fuzz_angels))
         fuzz_angels.sort(key=lambda angel: angel[0], reverse=True)
+    
 
-        for angel, _ratio in levenshtein_angels:
-            result += f"maybe you made a typo, did you mean {angel}?\n"
-        for angel, _ratio in fuzz_angels:
-            result += f"maybe he is an angel, its similar to {angel}\n"
+        for angel in levenshtein_angels:
+            result += f"maybe you made a typo, did you mean: {angel[0]}\n"
+        for angel in fuzz_angels:
+            result += f"maybe he is an angel, its similar to {angel[0]}\n"
 
         if not fuzz_angels and not levenshtein_angels:
             if username.endswith("el") or username.endswith("al"):
