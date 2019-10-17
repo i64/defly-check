@@ -105,20 +105,21 @@ async def seek_angels(ctx, args):
     username = username.upper()
     result = str()
     f = True
-    if username.upper() == "AZAZEL" or username.upper() == "LUCIFER":
-        return await ctx.send("he is not an angel anymore :(")
+    if username == "AZAZEL" or username == "LUCIFER":
+        result = "he is not an angel anymore :("
+    elif username in ANGEL_NAMES:
+        result = f"ye {username} is a an angel"
+    else:
+        for angel in ANGEL_NAMES:
+            if fuzz.partial_ratio(username, angel) >= 80:
+                result += f"maybe he is an angel, its similar to {angel}\n"
+                f = False
 
-    for angel in ANGEL_NAMES:
-        if fuzz.partial_ratio(username, angel) >= 80:
-            result += f"maybe he is an angel, its similar to {angel}\n"
+        if f and username.endswith("el") or username.endswith("al"):
+            result = "yup it's an angel from -el/al family"
             f = False
-
-    if f and username.endswith("el") or username.endswith("al"):
-        result = "yup it's an angel from -el/al family"
-        f = False
-    elif f:
-        result = f"no {username} is not -.-"
-
+        elif f:
+            result = f"no {username} is not -.-"
     return await ctx.send(result)
 
 
