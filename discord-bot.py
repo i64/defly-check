@@ -58,12 +58,15 @@ async def get_list(ctx):
 async def add_player(ctx, *args):
     username = " ".join(args)
     if username:
-        if username not in kill_list:
-            kill_list.append(username)
-            bot_utils.save_killist(kill_list)
-            await ctx.send(f"{username} is in tracklist now")
+        if username != "Player":
+            if username not in kill_list:
+                kill_list.append(username)
+                bot_utils.save_killist(kill_list)
+                await ctx.send(f"{username} is in tracklist now")
+            else:
+                await ctx.send("he is already in the tracklist")
         else:
-            await ctx.send("he is already in the tracklist")
+            await ctx.send("srysly??")
     else:
         await bot_utils.error(ctx)
 
