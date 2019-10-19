@@ -23,6 +23,7 @@ async def on_ready():
 
 @bot.command()
 async def check_server(ctx, region: str, port: Optional[int] = None):
+    bot_utils.logger(ctx, 1)
     if region:
         await bot_utils.check_server(ctx, region, port=port)
     else:
@@ -31,26 +32,31 @@ async def check_server(ctx, region: str, port: Optional[int] = None):
 
 @bot.command()
 async def check_servers(ctx, port: Optional[int] = None):
+    bot_utils.logger(ctx, 2)
     await bot_utils.check_servers(ctx, port=port)
 
 
 @bot.command()
 async def search_player(ctx, *args):
+    bot_utils.logger(ctx, 3)
     await bot_utils.search_player(ctx, args)
 
 
 @bot.command()
 async def is_angel(ctx, *args):
+    bot_utils.logger(ctx, 4)
     await bot_utils.seek_angels(ctx, args)
 
 
 @bot.command()
 async def check_list(ctx):
+    bot_utils.logger(ctx, 5)
     await bot_utils.check_killist(ctx, kill_list)
 
 
 @bot.command()
 async def get_list(ctx):
+    bot_utils.logger(ctx, 6)
     await ctx.send(" ".join(list(map(lambda x: f"`{x}`", kill_list))))
 
 

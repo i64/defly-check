@@ -7,6 +7,7 @@ from fuzzywuzzy import fuzz
 from fuzzywuzzy import process
 
 import distance
+from discord.ext.commands import Context
 
 ## bot utils is not a class cuz ctx is connection object
 
@@ -16,10 +17,11 @@ REGIONS_STRING = ", ".join(REGIONS_LIST)
 
 TEAM_MAP = {2: "Blue", 3: "Red", 4: "D-Green", 5: "Orange", 6: "Purple", 7: "S-Blue", 8: "Green", 9: "Pink"}
 
+
 # TEAM_NAMES = ["Blue", "Red", "Dark Green", "Orange", "Purple", "Sky Blue", "Green", "Pink"]
 
 
-async def error(ctx):
+async def error(ctx: Context):
     ctx.send("wrong command usage please check `!help` command")
 
 
@@ -40,7 +42,7 @@ def get_table(tbl: list, borderHorizontal="-", borderVertical="|", borderCross="
     return result
 
 
-async def check_killist(ctx, kill_list: list):
+async def check_killist(ctx: Context, kill_list: list):
     flag = True
     for members, header, server in worker._gen_check_killist(kill_list, bot=True):
         _len = len(members) > 1
@@ -52,6 +54,8 @@ async def check_killist(ctx, kill_list: list):
     if flag:
         await ctx.send("all of them are offline -.-")
 
+def logger(ctx:Context, _type):
+    print(ctx.author.name, _type, ctx.message)
 
 def load_killist():
     file = open("killist.json")
@@ -96,18 +100,18 @@ def region_with_port(uri: str):
     return f"{region} {port}"
 
 
-async def send_server(ctx, header: str, server: str):
+async def send_server(ctx: Context, header: str, server: str):
     _data = f"`{header}` {quote(parse_server(server))}"
     await ctx.send(_data)
 
 
-async def _check_servers(ctx, port=None):
+async def _check_servers(ctx: Context, port=None):
     for uri, server in worker._gen_check_servers(bot=True, port=port):
         if server:
             await send_server(ctx, region_with_port(uri), server)
 
 
-async def seek_angels(ctx, args):
+async def seek_angels(ctx: Context, args):
     username = "".join(args)
     username = username.upper()
     result = str()
@@ -146,7 +150,7 @@ async def seek_angels(ctx, args):
     return await ctx.send(result)
 
 
-async def search_player(ctx, args):
+async def search_player(ctx: Context, args):
     username = " ".join(args)
     if username:
         if username != "Player":
@@ -165,7 +169,7 @@ async def search_player(ctx, args):
         await error(ctx)
 
 
-async def check_server(ctx, region: str, port: Optional[int] = None):
+async def check_server(ctx: Context, region: str, port: Optional[int] = None):
     region = region.upper()
     if region in REGIONS_LIST:
         if not port:
@@ -179,7 +183,7 @@ async def check_server(ctx, region: str, port: Optional[int] = None):
         await ctx.send(f"hey, hey. check the region please {REGIONS_STRING}")
 
 
-async def check_servers(ctx, port: Optional[int] = None):
+async def check_servers(ctx: Context, port: Optional[int] = None):
     if not port:
         for port in worker.KNOWN_PORTS:
             await _check_servers(ctx, port)
