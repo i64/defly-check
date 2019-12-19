@@ -1,6 +1,4 @@
-from flask import Flask, jsonify, request
-import os
-
+from flask import Flask, jsonify
 import worker
 
 app = Flask(__name__)
