@@ -28,7 +28,7 @@ def parse_user(_data):
 
 def parse_teams(_data: bytes):
     data = DataView(_data)
-    max_user_per_team = data.get_uint_8(1)
+#     max_user_per_team = data.get_uint_8(1)
     team_count = data.get_uint_8(2)
 
     teams = list()
@@ -45,7 +45,7 @@ def parse_teams(_data: bytes):
         member_limit = data.get_uint_8(iter_counter + 9)
         iter_counter += 10
         members = list()
-        for member_id in range(member_limit):
+        for _ in range(member_limit):
             members.append(data.get_int_32(iter_counter))
             iter_counter += 4
         teams.append(dict(team_id=team_id, map_percent=map_percent, available=available, members=members))
@@ -57,8 +57,8 @@ def parser(data: bytes, users: list, websocket: websockets.WebSocketClientProtoc
     header_byte = data[0]
     if header_byte == 29:
         ret = parse_user(data)
-        if type(ret) == int:
-            users = list(filter(lambda user: user["user_id"] != ret, users))
+        if isinstance(ret, int):
+            users = [user for user in users if user["user_id"] != ret]
         else:
             users.append(ret)
         return users
