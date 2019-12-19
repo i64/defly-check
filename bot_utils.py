@@ -47,7 +47,7 @@ async def check_killist(ctx: Context, kill_list: list):
     for members, header, server in worker._gen_check_killist(kill_list, bot=True):
         _len = len(members) > 1
         await ctx.send(
-            f"ya ya, {' '.join(list(map(lambda x: f'`{x}`', members)))} {'are' if _len else 'is'} online lets go kill {'them' if _len else 'him/her'}: https://defly.io/#1-{header.replace('defly.io', '')}"
+            f"ya ya, {' '.join([f'`{member}`' for member in members])} {'are' if _len else 'is'} online lets go kill {'them' if _len else 'him/her'}: https://defly.io/#1-{header.replace('defly.io', '')}"
         )
         await send_server(ctx, header, server)
         flag = False
