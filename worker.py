@@ -4,7 +4,6 @@ import requests
 import threading
 import websockets
 
-from typing import Optional
 
 GEN_ENDPOINT = "https://s.defly.io/?r={}&m={}"
 REGION_LIST = ["EU1", "TOK1", "SA1", "RU1", "USE1", "USW1", "AU"]
