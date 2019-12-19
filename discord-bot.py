@@ -56,7 +56,7 @@ async def check_list(ctx):
 @bot.command()
 async def get_list(ctx):
     bot_utils.logger(ctx, 6)
-    await ctx.send(" ".join(list(map(lambda x: f"`{x}`", kill_list))))
+    await ctx.send(" ".join([f"`{victim}`" for victim in kill_list]))
 
 
 @bot.command()
