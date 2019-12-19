@@ -4,7 +4,6 @@ from discord.ext import commands
 from typing import Optional
 
 import bot_utils
-import worker
 
 bot = commands.Bot(command_prefix="!")
 
