@@ -3,9 +3,10 @@ import struct
 
 class DataView:
     def __init__(self, array, bytes_per_element=1):
-        if type(array) == bytes:
+        if isinstance(array, bytes):
             self.array = array
-        self.array = bytes(array)
+        else:
+            self.array = bytes(array)
         self.length = len(array)
 
     def get_uint_32(self, idx):
