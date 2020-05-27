@@ -5,7 +5,7 @@ from typing import Optional
 
 from discord.ext.commands import Context
 
-from typing import Any, List, Optional, Set
+from typing import Any, List, Optional, Set, Tuple
 
 
 from parser import Player, Team, Server
@@ -85,9 +85,8 @@ def serialize_server(server: Server) -> str:
 
 
 def get_table(titles: Any, rows: List[List[str]]) -> str:
-    titles.extend(rows)
     widths = [max(map(len, map(str, col))) for col in zip(*rows)]
-    rows = [rows[0]] + [["-" * width for width in widths]] + rows[1:]
+    rows = [titles] + [["-" * width for width in widths]] + rows
     return "\n".join(
         [
             ("  ".join((str(val).ljust(width) for val, width in zip(row, widths))))
@@ -144,7 +143,7 @@ async def _check_servers(ctx: Context, port: Optional[str] = None) -> None:
             await send_server(ctx, region_with_port(uri), server)
 
 
-async def search_player(ctx: Context, args: List[str]) -> None:
+async def search_player(ctx: Context, args: Tuple[Any, ...]) -> None:
     username = " ".join(args)
     if username:
         if username != "Player":
