@@ -1,144 +1,144 @@
 import parser
 import asyncio
-import requests
-import threading
+import aiohttp
 import websockets
+
+from contextlib import suppress
+
+from typing import (
+    List,
+    Optional,
+    Dict,
+    Tuple,
+    AsyncGenerator,
+    Union,
+    Set,
+    TYPE_CHECKING,
+)
+from enum import IntEnum
+
+from parser import Player, Server
+
+
+class GameModes(IntEnum):
+    FFA = 0
+    TEAMS = 1
+    DEFUSE = 2
+    EFFA = 3
 
 
 GEN_ENDPOINT = "https://s.defly.io/?r={}&m={}"
-REGION_LIST = ["EU1", "TOK1", "SA1", "RU1", "USE1", "USW1", "AU"]
-KNOWN_PORTS = [3005, 3015]
+REGION_LIST = ("EU1", "TOK1", "SA1", "RU1", "USE1", "USW1", "AU")
+KNOWN_PORTS = ("3005", "3015")
 
 trd_ss = None
 
 
-async def _check_server(server: str, auth: bytes):
-    try:
-        async with websockets.connect(f"wss://{server.replace(':', '/')}") as websocket:
+async def _check_server(host: str, auth: bytes) -> Optional[Server]:
+    with suppress(websockets.exceptions.InvalidStatusCode):
+        async with websockets.connect(f"wss://{host.replace(':', '/')}") as websocket:
             await websocket.send(auth)
-            users = list()
+            players: Dict[int, Player] = dict()
             while True:
                 try:
-                    data = await websocket.recv()
-                    res = parser.parser(data, users, websocket)
-                    if res:
-                        if res[0].get("available") != None:
-                            for team in res:
-                                members = list()
-                                for member_id in team.get("members"):
-                                    member = list(filter(lambda user: user.get("user_id") == member_id, users))
-                                    if member:
-                                        members.extend(member)
-                                team["members"] = members
-                            return res
-                except (websockets.exceptions.ConnectionClosed):
-                    break
-    except (websockets.exceptions.InvalidStatusCode):
-        pass
+                    data = await asyncio.wait_for(websocket.recv(), timeout=1)
+                    assert isinstance(data, bytes)
+                    server = await parser.parser(data, players, websocket)
+                    if server and server.teams[0].available:
+                        # for team in server.teams:
+                        #     if mutual_keys:=team.players.keys()&players.keys():
+                        #         team.players = {key: players[key] for key in mutual_keys}
+                        return server
+                except (websockets.exceptions.ConnectionClosed, asyncio.TimeoutError):
+                    return None
 
 
-def get_server(region: str, m=1):
-    resp = requests.get(GEN_ENDPOINT.format(region, m)).text
-    return resp.split(" ")
+async def get_hosts(region: str, gamemode: GameModes = GameModes.TEAMS) -> List[str]:
+    async with aiohttp.ClientSession() as client:
+        async with client.get(GEN_ENDPOINT.format(region, gamemode)) as resp:
+            text = await resp.text()
+            return text.split(" ")
 
 
-def thread_shit(server, phase):
-    global trd_ss
-    loop = asyncio.new_event_loop()
-    trd_ss = loop.run_until_complete(_check_server(server, phase))
-    loop.stop()
-    loop.close()
-
-
-def check_server(region: str, m=1, port=None, bot=False):
-    server, token = get_server(region, m)
-    if port is not None:
-        server = f"{server.split(':')[0]}:{str(port)}"
-    _result = _get_server(server, token, bot=bot)
+async def check_server(
+    region: str, gamemode: GameModes = GameModes.TEAMS, port=None, bot=False
+) -> Union[Server, Tuple[str, Server]]:
+    uri, token, _ = await get_hosts(region, gamemode)
+    if port:
+        uri = f"{uri.split(':')[0]}:{str(port)}"
+    server = await __get_server(uri, token)
     if bot:
-        return (server.split(":")[1], _result)
-    return _result
+        return (uri.split(":")[1], server)
+    return server
 
 
-def _get_server(server, token, bot=False):
+async def __get_server(host: str, token: str) -> Optional[Server]:
     auth = ("Player", token)
     phase = parser.create_login_phase(*auth, skin=1, game_played=0)
-    if bot:  # im to lazy to fix it with asyncio server
-        shit = threading.Thread(target=thread_shit, args=(server, phase))
-        shit.start()
-        shit.join()
-    else:
-        thread_shit(server, phase)
-    return trd_ss
+    return await _check_server(host, phase)
 
 
-def change_port(uri: str, port=None):
+def change_port(uri: str, port: Optional[str] = None) -> str:
     if port:
-        region, _port = uri.split(":")
+        region, _ = uri.split(":")
         return f"{region}:{port}"
     return uri
 
 
-def _gen_check_servers(m=1, port=None, bot=False):
-    done_list = list()
+async def check_servers(
+    game_mode: GameModes = GameModes.TEAMS, port: Optional[str] = None,
+) -> AsyncGenerator[Tuple[str, Server], None]:
+    done_list = set()
     for region in REGION_LIST:
-        server, token = get_server(region)
-        server = change_port(server, port)
-        if server not in done_list:
-            done_list.append(server)
-            yield (server, _get_server(server, token, bot=bot))
+        uri, token, _ = await get_hosts(region, game_mode)
+        uri = change_port(uri, port)
+        if uri not in done_list:
+            done_list.add(uri)
+            server = await __get_server(uri, token)
+            yield (uri, server)
 
 
-def check_servers(port=None, m=1, bot=False):
-    result = dict()
-    for uri, server in _gen_check_servers(bot=bot, port=port):
-        if server:
-            region, port = uri.split(":")
-            result[f"{region}"] = server
-    return result
-
-
-def get_server_members(server):
+def get_all_usernames(server: Optional[Server]) -> List[str]:
     result = list()
     if server:
-        for team in server:
-            result.extend([member["username"] for member in team["members"]])
+        for team in server.teams:
+            result.extend([player.username for player in team.players.values()])
     return result
 
 
-def get_team_members(team):
-    return [member["username"] for member in team["members"]]
-
-
-def search_player(username: str, bot=False):
-    if username != "Player":
-        for port in KNOWN_PORTS:
-            for uri, server in _gen_check_servers(bot=bot, port=port):
-                members = get_server_members(server)
-                if username in members:
-                    return (uri.replace(".defly.io/", ":"), server)
+async def search_player(
+    username: str, bot: bool = False
+) -> Optional[Tuple[str, Server]]:
+    if username in ("Player",):
+        return None
+    for port in KNOWN_PORTS:
+        async for uri, server in check_servers(port=port):
+            if username in get_all_usernames(server):
+                return (uri.replace(".defly.io/", ":"), server)
     return None
 
 
-def check_available(server: str, region: str, m: int, username: str, token: str):
-    params = {"r": region, "m": m, "s": token, "p": server.replace("defly.io", ""), "u": username}
-    response = requests.post("http://s.defly.io/", params=params, verify=False, timeout=2)
+async def check_available(
+    server: str, region: str, m: int, username: str, token: str
+) -> bool:
+    params = {
+        "r": region,
+        "m": m,
+        "s": token,
+        "p": server.replace("defly.io", ""),
+        "u": username,
+    }
+    async with aiohttp.ClientSession() as client:
+        async with client.post(
+            "http://s.defly.io/", params=params, verify=False, timeout=2
+        ) as resp:
+            text = await resp.text()
+            return not text.startswith("ER")
 
-    return not response.text.startswith("ER")
 
-
-def _gen_check_killist(kill_list: list, bot=None):
-    for uri, server in _gen_check_servers(bot=bot):
-        members = get_server_members(server)
-        online_members = set(kill_list).intersection(members)
-        if online_members:
-            yield (online_members, uri.replace(".defly.io/", ":"), server)
-
-    # for username in kill_list:
-    #     _data = .search_player(username, bot=True)  # heroku neden walrnus desteklemiyorsun mk
-    #     if _data:
-    #         header, server = _data
-    #         await ctx.send(
-    #             f"ya ya,{username} is online lets go kill him: https://defly.io/#1-{header.replace('defly.io', '')}"
-    #         )
-    #         await send_server(ctx, header, server)
+async def _gen_check_tracklist(
+    tracklist: Set[str], bot: bool = False
+) -> AsyncGenerator[Tuple[Set[str], str, Server], None]:
+    async for uri, server in check_servers():
+        if online_players := tracklist.intersection(get_all_usernames(server)):
+            yield (online_players, uri.replace(".defly.io/", ":"), server)

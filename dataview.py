@@ -23,15 +23,21 @@ class DataView:
 
     def get_int_32(self, idx):
         bytes_to_read = 4
-        return int.from_bytes(self.array[idx : idx + bytes_to_read], byteorder="big", signed=True)
+        return int.from_bytes(
+            self.array[idx : idx + bytes_to_read], byteorder="big", signed=True
+        )
 
     def get_int_16(self, idx):
         bytes_to_read = 2
-        return int.from_bytes(self.array[idx : idx + bytes_to_read], byteorder="big", signed=True)
+        return int.from_bytes(
+            self.array[idx : idx + bytes_to_read], byteorder="big", signed=True
+        )
 
     def get_int_8(self, idx):
         bytes_to_read = 1
-        return int.from_bytes(self.array[idx : idx + bytes_to_read], byteorder="big", signed=True)
+        return int.from_bytes(
+            self.array[idx : idx + bytes_to_read], byteorder="big", signed=True
+        )
 
     def get_float_32(self, idx):
         bytes_to_read = 4
