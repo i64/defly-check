@@ -4,7 +4,7 @@ import worker
 from typing import Optional
 
 from discord.ext.commands import Context
-
+from discord import Embed
 from typing import Any, List, Optional, Set, Tuple
 
 
@@ -50,6 +50,30 @@ TEAM_MAP = {
     9: "Pink",
 }
 TEAMS_TITLE = ["Team", "Map %", "Ppl", "Players"]
+
+
+HELP_MSG = Embed()
+
+HELP_MSG.add_field(
+    name="!check_server REGION [PORT]", value="checks server", inline=False
+)
+HELP_MSG.add_field(
+    name="!check_servers [PORT]", value="checks all active servers", inline=False
+)
+
+HELP_MSG.add_field(name="!check_list ", value="check the player list", inline=False)
+HELP_MSG.add_field(
+    name="!add_player PLAYER_NAME", value="adds the player into the list", inline=False,
+)
+HELP_MSG.add_field(name="!get_list", value="returns the list", inline=False)
+
+HELP_MSG.add_field(
+    name="!search_player PLAYER_NAME",
+    value="checks if the player is online",
+    inline=False,
+)
+
+HELP_MSG.add_field(name="!help", value="Gives this message", inline=False)
 
 
 async def error(ctx: Context) -> None:
@@ -174,7 +198,7 @@ async def check_server(ctx: Context, region: str, port: Optional[int] = None) ->
                 if data:
                     await send_server(ctx, _server_handler, data)
                 else:
-                    await ctx.send(f"{_server_handler} are %80")
+                    await ctx.send(f"{_server_handler} is above of %80")
     else:
         await ctx.send(f"hey, hey. check the region please {REGIONS_STRING}")
 

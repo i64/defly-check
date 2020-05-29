@@ -49,10 +49,10 @@ def parse_user(_data: bytes) -> Union[Player, int]:
     username = get_str(data, 5)
     skin_id = data.get_int_32(6 + 2 * len(username))
 
-    len_checker = 6 + 2 * len(username) + 4 + 4 - 1
-    if data.length >= len_checker:
-        if data.get_int_32(len_checker) == -1:  # leaved?
+    if len(data) >= (len_checker := 6 + 2 * len(username) + 4 + 4 - 1):
+        if data.get_int_32(len_checker) == -1:  # left?
             return player_id
+
     return Player(player_id=player_id, username=username, skin_id=skin_id)
 
 

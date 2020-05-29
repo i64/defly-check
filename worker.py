@@ -106,11 +106,11 @@ async def check_servers(
             yield (uri, server)
 
 
-def get_all_usernames(server: Optional[Server]) -> List[str]:
-    result = list()
+def get_all_usernames(server: Optional[Server]) -> List[Optional[str]]:
+    result: List[Optional[str]] = list()
     if server:
         for team in server.teams:
-            result.extend([player.username for player in team.players.values()])
+            result.extend(player.username for player in team.players.values())
     return result
 
 
