@@ -51,15 +51,12 @@ async def _check_server(host: str, auth: bytes) -> Optional[Server]:
                 try:
                     data = await asyncio.wait_for(websocket.recv(), timeout=1)
                     assert isinstance(data, bytes)
-                    server = await parser.parser(data, players, websocket)
-                    if server and server.teams[0].available:
-                        # for team in server.teams:
-                        #     if mutual_keys:=team.players.keys()&players.keys():
-                        #         team.players = {key: players[key] for key in mutual_keys}
+                    if server := await parser.parser(data, players, websocket) and server.teams[0].available:
                         return server
-                except (websockets.exceptions.ConnectionClosed, asyncio.TimeoutError):
+                except asyncio.TimeoutError as e:
                     return None
-
+                except websockets.exceptions.ConnectionClosed:
+                    return server
 
 async def get_hosts(region: str, gamemode: GameModes = GameModes.TEAMS) -> List[str]:
     async with aiohttp.ClientSession() as client:

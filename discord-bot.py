@@ -87,6 +87,26 @@ async def add_player(ctx: commands.Context, *args) -> None:
 
 
 @bot.command()
+async def remove_player(ctx: commands.Context, *args) -> None:
+    if __debug__:
+        bot_utils.logger(ctx, bot_utils.Logger.ADD_PLAYER)
+
+    username = " ".join(args)
+    if username:
+        if username in ("Player",):
+            await ctx.send("srysly??")
+        else:
+            if username in tracklist:
+                tracklist.remove(username)
+                bot_utils.save_tracklist(tracklist)
+                await ctx.send(f"{username} is in tracklist now")
+            else:
+                await ctx.send("he is already in not there")
+    else:
+        await bot_utils.error(ctx)
+
+
+@bot.command()
 async def help(ctx: commands.Context) -> None:
     if __debug__:
         bot_utils.logger(ctx, bot_utils.Logger.HELP)
