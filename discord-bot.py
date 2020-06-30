@@ -43,6 +43,16 @@ async def check_servers(ctx: commands.Context, port: Optional[str] = None) -> No
 
 
 @bot.command()
+async def get_link(
+    ctx: commands.Context, region: str, port: Optional[str] = None
+) -> None:
+    if __debug__:
+        bot_utils.logger(ctx, bot_utils.Logger.GET_LINK)
+
+    await ctx.send(bot_utils.get_link(region=region, port=port))
+
+
+@bot.command()
 async def search_player(ctx: commands.Context, *args) -> None:
     if __debug__:
         bot_utils.logger(ctx, bot_utils.Logger.SEARCH_PLAYER)
@@ -113,4 +123,8 @@ async def help(ctx: commands.Context) -> None:
     await ctx.send(embed=bot_utils.HELP_MSG)
 
 
-bot.run(getenv("DISCORD_TOKEN"))
+bot.run(
+    getenv(
+        "DISCORD_TOKEN"
+    )
+)

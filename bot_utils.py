@@ -1,16 +1,17 @@
 import json
 import worker
 
+from enum import Enum
 from typing import Optional
 
 from discord.ext.commands import Context
 from discord import Embed
+
 from typing import Any, List, Optional, Set, Tuple
 
 
 from parser import Player, Team, Server
-
-from enum import Enum
+from worker import GameModes
 
 
 class Logger(Enum):
@@ -21,23 +22,24 @@ class Logger(Enum):
     GET_LIST = 4
     ADD_PLAYER = 5
     HELP = 6
+    GET_LINK = 7
 
 
 TRACK_LIST = "good_players.json"
 
-REGIONS = frozenset(
-    {
-        "EU1",
-        # "TOK1",
-        # "SA1",
-        # "RU1",
-        "USE1",
-        "USW1",
-        # "AU",
-    }
+REGIONS = dict(
+    EU1="eu1-1",
+    USE1="use4",
+    USW1="usw4",
+    # "TOK1",
+    # "SA1",
+    # "RU1",
+    # "AU",
 )
 
-REGIONS_STRING = ", ".join(REGIONS)
+REGION_NAMES = frozenset(REGIONS.items())
+
+REGIONS_STRING = ", ".join(REGIONS.keys())
 
 TEAM_MAP = {
     2: "Blue",
@@ -66,6 +68,11 @@ HELP_MSG.add_field(
     name="!add_player PLAYER_NAME", value="adds the player into the list", inline=False,
 )
 HELP_MSG.add_field(name="!get_list", value="returns the list", inline=False)
+HELP_MSG.add_field(
+    name="!get_link REGION PORT",
+    value="returns a link for the given link",
+    inline=False,
+)
 
 HELP_MSG.add_field(
     name="!search_player PLAYER_NAME",
@@ -151,6 +158,12 @@ def quote(data: str, f_format: Optional[str] = None) -> str:
     return f"```{data}```"
 
 
+def get_link(region: str, port: str, game_mode: GameModes = GameModes.TEAMS):
+    if region_id := REGIONS.get(region.upper()):
+        return f"https://defly.io/#{game_mode.value}-{region_id}.:{port}"
+    return f"region the region name please. ({region} not found).\n all regions are: {REGIONS_STRING}"
+
+
 def region_with_port(uri: str) -> str:
     region, port = uri.split(".defly.io:")
     return f"{region} {port}"
@@ -187,7 +200,7 @@ async def search_player(ctx: Context, args: Tuple[Any, ...]) -> None:
 
 async def check_server(ctx: Context, region: str, port: Optional[int] = None) -> None:
     region = region.upper()
-    if region in REGIONS:
+    if region in REGION_NAMES:
         if port:
             _, data = await worker.check_server(region, port=port, bot=True)  # type: ignore
             await send_server(ctx, f"{region} {port}", data)
