@@ -51,7 +51,7 @@ async def _check_server(host: str, auth: bytes) -> Optional[Server]:
                 try:
                     data = await asyncio.wait_for(websocket.recv(), timeout=1)
                     assert isinstance(data, bytes)
-                    if server := await parser.parser(data, players, websocket) and server.teams[0].available:
+                    if (server := await parser.parser(data, players, websocket)) and server.teams[0].available:
                         return server
                 except asyncio.TimeoutError as e:
                     return None
