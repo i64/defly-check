@@ -199,7 +199,7 @@ async def search_player(ctx: Context, args: Tuple[Any, ...]) -> None:
 
 
 async def check_server(ctx: Context, region: str, port: Optional[int] = None) -> None:
-    if (region:=region.upper())in REGION_NAMES:
+    if (region:=region.upper()) in REGION_NAMES:
         if port:
             _, data = await worker.check_server(region, port=port, bot=True)  # type: ignore
             await send_server(ctx, f"{region} {port}", data)
