@@ -123,8 +123,4 @@ async def help(ctx: commands.Context) -> None:
     await ctx.send(embed=bot_utils.HELP_MSG)
 
 
-bot.run(
-    getenv(
-        "DISCORD_TOKEN"
-    )
-)
+bot.run(getenv("DISCORD_TOKEN"))

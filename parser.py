@@ -12,6 +12,7 @@ class Player:
     player_id: int
     username: str
     skin_id: int
+    badge_id: Optional[int] = 0
 
 
 @dataclass
@@ -45,15 +46,20 @@ def get_str(data: DataView, offset: int) -> str:
 
 def parse_user(_data: bytes) -> Union[Player, int]:
     data = DataView(_data)
-    player_id = data.get_int_32(1)
-    username = get_str(data, 5)
-    skin_id = data.get_int_32(6 + 2 * len(username))
+    player_id = data.get_int_32(size := 1)
+    username = get_str(data, size := size + 4)
+    skin_id = data.get_int_32(size := size + 2 * len(username) + 1)
+    badge = 0
 
-    if len(data) >= (len_checker := 6 + 2 * len(username) + 4 + 4 - 1):
-        if data.get_int_32(len_checker) == -1:  # left?
+    if len(data) >= (size := size + 4 + 4) - 1:
+        if data.get_int_32(size - 4) == -1:  # left?
             return player_id
+    if len(data) >= size + 1:
+        badge = data.get_uint_8(size)
 
-    return Player(player_id=player_id, username=username, skin_id=skin_id)
+    return Player(
+        player_id=player_id, username=username, skin_id=skin_id, badge_id=badge
+    )
 
 
 def parse_teams(_data: bytes, _players: Dict[int, Player]) -> Server:
