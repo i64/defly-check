@@ -13,6 +13,8 @@ from typing import Any, List, Optional, Set, Tuple
 from parser import Player, Team, Server
 from worker import GameModes
 
+import aiofiles as aiof
+
 
 class Logger(Enum):
     CHECK_SERVER = 0
@@ -66,6 +68,11 @@ HELP_MSG.add_field(
 HELP_MSG.add_field(name="!check_list ", value="check the player list", inline=False)
 HELP_MSG.add_field(
     name="!add_player PLAYER_NAME", value="adds the player into the list", inline=False,
+)
+HELP_MSG.add_field(
+    name="!remove_player PLAYER_NAME",
+    value="removes the player from the list",
+    inline=False,
 )
 HELP_MSG.add_field(name="!get_list", value="returns the list", inline=False)
 HELP_MSG.add_field(
@@ -145,11 +152,9 @@ def load_tracklist() -> Set[str]:
     return set(json.load(fp))
 
 
-def save_tracklist(tracklist: Set[str]):
-    fp = open(TRACK_LIST, "w")
-    json.dump(list(tracklist), fp)
-    if not fp.closed:
-        fp.close()
+async def save_tracklist(tracklist: Set[str]):
+    async with aiof.open(TRACK_LIST, "w") as out:
+        await out.write(json.dumps(list(tracklist)))
 
 
 def quote(data: str, f_format: Optional[str] = None) -> str:

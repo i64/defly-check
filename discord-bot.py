@@ -1,16 +1,27 @@
 import discord
-from os import getenv
-from discord.ext import commands
-from typing import Optional
-
 
 import bot_utils
 
+from os import getenv
+from typing import Optional
+from discord.ext import commands
+
+from functools import lru_cache
+
 bot = commands.Bot(command_prefix="!")
+bot.remove_command("help")
 
 tracklist = bot_utils.load_tracklist()
 
-bot.remove_command("help")
+
+@lru_cache
+def serialize_list() -> str:
+    return " ".join([f"`{victim}`" for victim in tracklist])
+
+
+@lru_cache
+def user_in(username: str) -> bool:
+    return username in tracklist
 
 
 @bot.event
@@ -73,7 +84,7 @@ async def get_list(ctx: commands.Context) -> None:
     if __debug__:
         bot_utils.logger(ctx, bot_utils.Logger.GET_LIST)
 
-    await ctx.send(" ".join([f"`{victim}`" for victim in tracklist]))
+    await ctx.send(serialize_list())
 
 
 @bot.command()
@@ -81,16 +92,17 @@ async def add_player(ctx: commands.Context, *args) -> None:
     if __debug__:
         bot_utils.logger(ctx, bot_utils.Logger.ADD_PLAYER)
 
-    username = " ".join(args)
-    if username:
+    if username := " ".join(args):
         if username in ("Player",):
             await ctx.send("srysly??")
         else:
-            if username in tracklist:
+            if user_in(username):
                 await ctx.send("he is already in the tracklist")
             else:
                 tracklist.add(username)
-                bot_utils.save_tracklist(tracklist)
+                serialize_list.cache_clear()
+                user_in.cache_clear()
+                await bot_utils.save_tracklist(tracklist)
                 await ctx.send(f"{username} is in tracklist now")
     else:
         await bot_utils.error(ctx)
@@ -101,14 +113,15 @@ async def remove_player(ctx: commands.Context, *args) -> None:
     if __debug__:
         bot_utils.logger(ctx, bot_utils.Logger.ADD_PLAYER)
 
-    username = " ".join(args)
-    if username:
+    if username := " ".join(args):
         if username in ("Player",):
             await ctx.send("srysly??")
         else:
-            if username in tracklist:
+            if user_in(username):
                 tracklist.remove(username)
-                bot_utils.save_tracklist(tracklist)
+                serialize_list.cache_clear()
+                user_in.cache_clear()
+                await bot_utils.save_tracklist(tracklist)
                 await ctx.send(f"{username} is in tracklist now")
             else:
                 await ctx.send("he is already in not there")
@@ -120,6 +133,7 @@ async def remove_player(ctx: commands.Context, *args) -> None:
 async def help(ctx: commands.Context) -> None:
     if __debug__:
         bot_utils.logger(ctx, bot_utils.Logger.HELP)
+
     await ctx.send(embed=bot_utils.HELP_MSG)
 
 

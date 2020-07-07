@@ -1,3 +1,4 @@
 websockets
 discord
 aiohttp
+aiofiles
