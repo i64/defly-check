@@ -5,7 +5,7 @@ from enum import Enum
 from typing import Optional
 
 from discord.ext.commands import Context
-from discord import Embed
+from discord import Embed, Colour
 
 from typing import Any, List, Optional, Set, Tuple
 
@@ -44,14 +44,14 @@ REGION_NAMES = frozenset(REGIONS.keys())
 REGIONS_STRING = ", ".join(REGIONS.keys())
 
 TEAM_MAP = {
-    2: "Blue",
-    3: "Red",
-    4: "D-Green",
-    5: "Orange",
-    6: "Purple",
-    7: "S-Blue",
-    8: "Green",
-    9: "Pink",
+    2: ("Blue", 0x3D5DFF),
+    3: ("Red", 0xFD3535),
+    4: ("D-Green", 0x008037),
+    5: ("Orange", 0xFF8A2A),
+    6: ("Purple", 0x924BFF),
+    7: ("S-Blue", 0x55D5FF),
+    8: ("Green", 0x18E21F),
+    9: ("Pink", 0xF659FF),
 }
 TEAMS_TITLE = ["Team", "Map %", "Ppl", "Players"]
 
@@ -100,7 +100,7 @@ def serialize_user(players: List[Player]) -> str:
 
 def serialize_team(team: Team) -> List[str]:
     result = list()
-    result.append(TEAM_MAP[team.team_id])
+    result.append(TEAM_MAP[team.team_id][0])
     result.append(format(team.map_percent, ".2f"))
     result.append(f"{6}/{len(team.players)}")
     result.append(
@@ -124,13 +124,14 @@ def serialize_server(server: Server) -> str:
 
 def get_table(titles: Any, rows: List[List[str]]) -> str:
     widths = [max(map(len, map(str, col))) for col in zip(*rows)]
-    rows = [titles] + [["-" * width for width in widths]] + rows
-    return "\n".join(
+    header = "  ".join((str(val).ljust(width) for val, width in zip(titles, widths)))
+    body = "\n".join(
         [
             ("  ".join((str(val).ljust(width) for val, width in zip(row, widths))))
             for row in rows
         ]
     )
+    return f"{header}\n\n{body}"
 
 
 async def check_tracklist(ctx: Context, tracklist: Set[str]) -> None:
@@ -174,15 +175,26 @@ def region_with_port(uri: str) -> str:
     return f"{region} {port}"
 
 
+def get_url(header: str):
+    return f"https://defly.io/#1-{header.replace('defly.io', '')}"
+
+
 async def send_server(ctx: Context, header: str, server: Server) -> None:
-    _data = f"`{header}` {quote(serialize_server(server))}"
-    await ctx.send(_data)
+    embed = Embed(
+        title=f"**{region_with_port(header)}**",
+        colour=Colour(
+            TEAM_MAP[max(server.teams, key=lambda team: team.map_percent).team_id][1]
+        ),
+        url=get_url(header),
+        description=quote(serialize_server(server)),
+    )
+    await ctx.send(embed=embed)
 
 
 async def _check_servers(ctx: Context, port: Optional[str] = None) -> None:
     async for uri, server in worker.check_servers(port=port):
         if server:
-            await send_server(ctx, region_with_port(uri), server)
+            await send_server(ctx, uri, server)
 
 
 async def search_player(ctx: Context, args: Tuple[Any, ...]) -> None:
@@ -192,11 +204,11 @@ async def search_player(ctx: Context, args: Tuple[Any, ...]) -> None:
             if _data := await worker.search_player(username, bot=True):
                 header, server = _data
                 await ctx.send(
-                    f"ya ya, {username} is online lets go kill him: https://defly.io/#1-{header.replace('defly.io', '')}"
+                    f"ya ya, {username} is online lets go kill him: {get_url(header)}"
                 )
                 await send_server(ctx, header, server)
             else:
-                await ctx.send("no he is not online :(")
+                await ctx.send("no he/she is not online :(")
         else:
             await ctx.send("srysly??")
     else:
@@ -210,12 +222,11 @@ async def check_server(ctx: Context, region: str, port: Optional[int] = None) ->
             await send_server(ctx, f"{region} {port}", data)
         else:
             for _port in worker.KNOWN_PORTS:
-                _port, data = await worker.check_server(region, port=_port, bot=True)  # type: ignore
-                _server_handler = f"{region} {_port}"
+                uri, data = await worker.check_server(region, port=_port, bot=True)  # type: ignore
                 if data:
-                    await send_server(ctx, _server_handler, data)
+                    await send_server(ctx, uri, data)
                 else:
-                    await ctx.send(f"{_server_handler} is above of %80")
+                    await ctx.send(f"{uri} is above of %80")
     else:
         await ctx.send(f"hey, hey. check the region please {REGIONS_STRING}")
 

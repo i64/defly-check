@@ -76,7 +76,7 @@ async def check_server(
         uri = f"{uri.split(':')[0]}:{str(port)}"
     server = await __get_server(uri, token)
     if bot:
-        return (uri.split(":")[1], server)
+        return (uri, server)
     return server
 
 

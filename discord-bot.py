@@ -97,7 +97,7 @@ async def add_player(ctx: commands.Context, *args) -> None:
             await ctx.send("srysly??")
         else:
             if user_in(username):
-                await ctx.send("he is already in the tracklist")
+                await ctx.send("he/she is already in the tracklist")
             else:
                 tracklist.add(username)
                 serialize_list.cache_clear()
@@ -124,7 +124,7 @@ async def remove_player(ctx: commands.Context, *args) -> None:
                 await bot_utils.save_tracklist(tracklist)
                 await ctx.send(f"{username} is in tracklist now")
             else:
-                await ctx.send("he is already in not there")
+                await ctx.send("he/she is already in not there")
     else:
         await bot_utils.error(ctx)
 
