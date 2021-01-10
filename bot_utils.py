@@ -1,19 +1,15 @@
-import json
-import worker
+import aiofiles as aiof
 
-from enum import Enum
-from typing import Optional
-
-from discord.ext.commands import Context
 from discord import Embed, Colour
-
-from typing import Any, List, Optional, Set, Tuple
-
+from discord.ext.commands import Context
 
 from parser import Player, Team, Server
-from worker import GameModes
 
-import aiofiles as aiof
+import json
+import worker
+from enum import Enum
+
+from typing import Any, List, Optional, Set, Tuple
 
 
 class Logger(Enum):
@@ -95,7 +91,7 @@ async def error(ctx: Context) -> None:
 
 
 def serialize_user(players: List[Player]) -> str:
-    return "".join([player.username for player in players])
+    return "".join(player.username for player in players)
 
 
 def serialize_team(team: Team) -> List[str]:
@@ -105,11 +101,9 @@ def serialize_team(team: Team) -> List[str]:
     result.append(f"{6}/{len(team.players)}")
     result.append(
         "'"
-        + "','".join(
-            [
-                player.username.replace("'", "").replace('"', "").replace("````", "")
-                for player in team.players.values()
-            ]
+        + "', '".join(
+            player.username.replace("'", "").replace('"', "").replace("````", "")
+            for player in team.players.values()
         )
         + "'"
     )  # bu ne aq cok usendim duzeltmeye
@@ -135,13 +129,17 @@ def get_table(titles: Any, rows: List[List[str]]) -> str:
 
 
 async def check_tracklist(ctx: Context, tracklist: Set[str]) -> None:
+    done = False
     async for players, header, server in worker._gen_check_tracklist(tracklist):
+        done = True
         _len = len(players) > 1
         await ctx.send(
-            f"ya ya, {' '.join([f'`{player}`' for player in players])} {'are' if _len else 'is'} online lets go kill {'them' if _len else 'him/her'}: https://defly.io/#1-{header.replace('defly.io', '')}"
+            f"ya ya, {', '.join(f'`{player}`' for player in players)} {'are' if _len else 'is'} online lets go kill {'them' if _len else 'him/her'}"
         )
-        return await send_server(ctx, header, server)
-    await ctx.send("all of them are offline -.-")
+        await send_server(ctx, header, server)
+    else:
+        if not done:
+            await ctx.send("all of them are offline -.-")
 
 
 def logger(ctx: Context, _type: Logger) -> None:
@@ -164,7 +162,9 @@ def quote(data: str, f_format: Optional[str] = None) -> str:
     return f"```{data}```"
 
 
-def get_link(region: str, port: str, game_mode: GameModes = GameModes.TEAMS):
+def get_link(
+    region: str, port: str, game_mode: worker.GameModes = worker.GameModes.TEAMS
+):
     if region_id := REGIONS.get(region.upper()):
         return f"https://defly.io/#{game_mode.value}-{region_id}.:{port}"
     return f"region the region name please. ({region} not found).\n all regions are: {REGIONS_STRING}"
@@ -203,9 +203,7 @@ async def search_player(ctx: Context, args: Tuple[Any, ...]) -> None:
         if username != "Player":
             if _data := await worker.search_player(username, bot=True):
                 header, server = _data
-                await ctx.send(
-                    f"ya ya, {username} is online lets go kill him: {get_url(header)}"
-                )
+                await ctx.send(f"ya ya, {username} is online lets go kill him")
                 await send_server(ctx, header, server)
             else:
                 await ctx.send("no he/she is not online :(")

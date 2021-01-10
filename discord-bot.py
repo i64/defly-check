@@ -1,12 +1,12 @@
 import discord
+from discord.ext import commands
 
 import bot_utils
 
 from os import getenv
-from typing import Optional
-from discord.ext import commands
-
 from functools import lru_cache
+
+from typing import Optional
 
 bot = commands.Bot(command_prefix="!")
 bot.remove_command("help")
@@ -17,11 +17,6 @@ tracklist = bot_utils.load_tracklist()
 @lru_cache
 def serialize_list() -> str:
     return " ".join([f"`{victim}`" for victim in tracklist])
-
-
-@lru_cache
-def user_in(username: str) -> bool:
-    return username in tracklist
 
 
 @bot.event
@@ -96,12 +91,11 @@ async def add_player(ctx: commands.Context, *args) -> None:
         if username in ("Player",):
             await ctx.send("srysly??")
         else:
-            if user_in(username):
+            if username in tracklist:
                 await ctx.send("he/she is already in the tracklist")
             else:
                 tracklist.add(username)
                 serialize_list.cache_clear()
-                user_in.cache_clear()
                 await bot_utils.save_tracklist(tracklist)
                 await ctx.send(f"{username} is in tracklist now")
     else:
@@ -117,12 +111,11 @@ async def remove_player(ctx: commands.Context, *args) -> None:
         if username in ("Player",):
             await ctx.send("srysly??")
         else:
-            if user_in(username):
+            if username in tracklist:
                 tracklist.remove(username)
                 serialize_list.cache_clear()
-                user_in.cache_clear()
                 await bot_utils.save_tracklist(tracklist)
-                await ctx.send(f"{username} is in tracklist now")
+                await ctx.send(f"{username} is removed from the tracklist")
             else:
                 await ctx.send("he/she is already in not there")
     else:

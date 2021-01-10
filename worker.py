@@ -1,9 +1,11 @@
-import parser
-import asyncio
 import aiohttp
 import websockets
 
+import parser
+
+import asyncio
 from contextlib import suppress
+from enum import IntEnum
 
 from typing import (
     List,
@@ -13,11 +15,7 @@ from typing import (
     AsyncGenerator,
     Union,
     Set,
-    TYPE_CHECKING,
 )
-from enum import IntEnum
-
-from parser import Player, Server
 
 
 class GameModes(IntEnum):
@@ -42,11 +40,11 @@ KNOWN_PORTS = ("3005", "3015")
 trd_ss = None
 
 
-async def _check_server(host: str, auth: bytes) -> Optional[Server]:
+async def _check_server(host: str, auth: bytes) -> Optional[parser.Server]:
     with suppress(websockets.exceptions.InvalidStatusCode):
         async with websockets.connect(f"wss://{host.replace(':', '/')}") as websocket:
             await websocket.send(auth)
-            players: Dict[int, Player] = dict()
+            players: Dict[int, parser.Player] = dict()
             while True:
                 try:
                     data = await asyncio.wait_for(websocket.recv(), timeout=1)
@@ -70,7 +68,7 @@ async def get_hosts(region: str, gamemode: GameModes = GameModes.TEAMS) -> List[
 
 async def check_server(
     region: str, gamemode: GameModes = GameModes.TEAMS, port=None, bot=False
-) -> Union[Server, Tuple[str, Server]]:
+) -> Union[parser.Server, Tuple[str, parser.Server]]:
     uri, token, _ = await get_hosts(region, gamemode)
     if port:
         uri = f"{uri.split(':')[0]}:{str(port)}"
@@ -80,7 +78,7 @@ async def check_server(
     return server
 
 
-async def __get_server(host: str, token: str) -> Optional[Server]:
+async def __get_server(host: str, token: str) -> Optional[parser.Server]:
     auth = ("Player", token)
     phase = parser.create_login_phase(*auth, skin=1, game_played=0)
     return await _check_server(host, phase)
@@ -95,7 +93,7 @@ def change_port(uri: str, port: Optional[str] = None) -> str:
 
 async def check_servers(
     game_mode: GameModes = GameModes.TEAMS, port: Optional[str] = None,
-) -> AsyncGenerator[Tuple[str, Server], None]:
+) -> AsyncGenerator[Tuple[str, parser.Server], None]:
     done_list = set()
     for region in REGION_LIST:
         uri, token, _ = await get_hosts(region, game_mode)
@@ -106,7 +104,7 @@ async def check_servers(
             yield (uri, server)
 
 
-def get_all_usernames(server: Optional[Server]) -> List[Optional[str]]:
+def get_all_usernames(server: Optional[parser.Server]) -> List[Optional[str]]:
     result: List[Optional[str]] = list()
     if server:
         for team in server.teams:
@@ -116,7 +114,7 @@ def get_all_usernames(server: Optional[Server]) -> List[Optional[str]]:
 
 async def search_player(
     username: str, bot: bool = False
-) -> Optional[Tuple[str, Server]]:
+) -> Optional[Tuple[str, parser.Server]]:
     if username in ("Player",):
         return None
     for port in KNOWN_PORTS:
@@ -146,7 +144,8 @@ async def check_available(
 
 async def _gen_check_tracklist(
     tracklist: Set[str], bot: bool = False
-) -> AsyncGenerator[Tuple[Set[str], str, Server], None]:
-    async for uri, server in check_servers():
-        if online_players := tracklist.intersection(get_all_usernames(server)):
-            yield (online_players, uri.replace(".defly.io/", ":"), server)
+) -> AsyncGenerator[Tuple[Set[str], str, parser.Server], None]:
+    for port in KNOWN_PORTS:
+        async for uri, server in check_servers(port=port):
+            if online_players := tracklist.intersection(get_all_usernames(server)):
+                yield (online_players, uri.replace(".defly.io/", ":"), server)

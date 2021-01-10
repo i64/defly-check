@@ -1,10 +1,11 @@
-from dataview import DataView
 import websockets
 
-from typing import Dict, List, Optional, Union
-from dataclasses import dataclass
+from dataview import DataView
 
 import itertools
+from dataclasses import dataclass
+
+from typing import Dict, List, Optional, Union
 
 
 @dataclass
