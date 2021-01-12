@@ -35,7 +35,7 @@ REGION_LIST = (
     "USW1",
     # "AU",
 )
-KNOWN_PORTS = ("3005", "3015")
+KNOWN_PORTS = ("3005", "3015", "3025")
 
 trd_ss = None
 
