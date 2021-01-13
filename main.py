@@ -6,18 +6,43 @@ import bot_utils
 from os import getenv
 from functools import lru_cache
 
-from typing import Optional
+from typing import Optional, List, Generator
 
 bot = commands.Bot(command_prefix="!")
 bot.remove_command("help")
 
 tracklist = bot_utils.load_tracklist()
+loglist = bot_utils.load_loglist()
 
+
+MAX_LEN = 2000 - 8
 
 @lru_cache
-def serialize_list() -> str:
-    return " ".join([f"`{victim}`" for victim in tracklist])
+def serialize_list() -> List[str]:
+    data = list(_chunk_users(tracklist))
+    return data
 
+
+def _chunk_users(track_list: List[str]) -> Generator[str, None, None]:
+    ser = lambda l: f"```\n{', '.join(l)}\n```"
+    result = []
+    _len = 0
+    _done = True
+    for user in track_list:
+        if MAX_LEN > (_len:=(_len + len(user) + 2)):
+            _done = False
+            result.append(user)
+        else:
+            _len = len(user)
+            _done = True
+            yield ser(result)
+            result = [user]
+    
+    if not _done:
+        yield ser(result) 
+
+# print(serialize_list())
+# __import__('sys').exit(0)
 
 @bot.event
 async def on_ready():
@@ -78,8 +103,8 @@ async def check_list(ctx: commands.Context) -> None:
 async def get_list(ctx: commands.Context) -> None:
     if __debug__:
         bot_utils.logger(ctx, bot_utils.Logger.GET_LIST)
-
-    await ctx.send(serialize_list())
+    for _l in serialize_list():
+        await ctx.send(_l)
 
 
 @bot.command()
@@ -91,11 +116,34 @@ async def add_player(ctx: commands.Context, *args) -> None:
         if username in ("Player",):
             await ctx.send("srysly??")
         else:
-            if username in tracklist:
-                await ctx.send("he/she is already in the tracklist")
+            if (logs := loglist.get(username)) and any(
+                log.log_type is bot_utils.Logger.REMOVE_PLAYER for log in logs
+            ):
+                loglist.setdefault(username, []).append(
+                    bot_utils.TrollTrace(
+                        log_type=bot_utils.Logger.TRIED_TO_ADD,
+                        sus=ctx.author.name,
+                        victim=username,
+                    )
+                )
+                await bot_utils.save_loglist(loglist)
+                await ctx.send("nunu i can't do this")
+
+            elif username in tracklist:
+                await ctx.send("they are already in the tracklist")
             else:
                 tracklist.add(username)
                 serialize_list.cache_clear()
+
+                loglist.setdefault(username, []).append(
+                    bot_utils.TrollTrace(
+                        log_type=bot_utils.Logger.ADD_PLAYER,
+                        sus=ctx.author.name,
+                        victim=username,
+                    )
+                )
+
+                await bot_utils.save_loglist(loglist)
                 await bot_utils.save_tracklist(tracklist)
                 await ctx.send(f"{username} is in tracklist now")
     else:
@@ -103,9 +151,19 @@ async def add_player(ctx: commands.Context, *args) -> None:
 
 
 @bot.command()
+async def trolltrace(ctx: commands.Context, *args) -> None:
+    if (
+        (username := " ".join(args))
+        and (logs := loglist.get(username))
+    ):
+        for log in logs:
+            await ctx.send(log.into_str())
+
+
+@bot.command()
 async def remove_player(ctx: commands.Context, *args) -> None:
     if __debug__:
-        bot_utils.logger(ctx, bot_utils.Logger.ADD_PLAYER)
+        bot_utils.logger(ctx, bot_utils.Logger.REMOVE_PLAYER)
 
     if username := " ".join(args):
         if username in ("Player",):
@@ -113,11 +171,21 @@ async def remove_player(ctx: commands.Context, *args) -> None:
         else:
             if username in tracklist:
                 tracklist.remove(username)
+
+                loglist.setdefault(username, []).append(
+                    bot_utils.TrollTrace(
+                        log_type=bot_utils.Logger.REMOVE_PLAYER,
+                        sus=ctx.author.name,
+                        victim=username,
+                    )
+                )
                 serialize_list.cache_clear()
+
+                await bot_utils.save_loglist(loglist)
                 await bot_utils.save_tracklist(tracklist)
                 await ctx.send(f"{username} is removed from the tracklist")
             else:
-                await ctx.send("he/she is already in not there")
+                await ctx.send("{username} not found in the tracklist")
     else:
         await bot_utils.error(ctx)
 
@@ -130,4 +198,5 @@ async def help(ctx: commands.Context) -> None:
     await ctx.send(embed=bot_utils.HELP_MSG)
 
 
-bot.run(getenv("DISCORD_TOKEN"))
+
+bot.run(getenv("DISCORD_TOKEN", ""))

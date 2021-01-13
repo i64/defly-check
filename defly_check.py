@@ -57,7 +57,8 @@ async def _check_server(host: str, auth: bytes) -> Optional[parser.Server]:
                     return None
                 except websockets.exceptions.ConnectionClosed:
                     return server
-
+                except:
+                    return None
 
 async def get_hosts(region: str, gamemode: GameModes = GameModes.TEAMS) -> List[str]:
     async with aiohttp.ClientSession() as client:
@@ -95,7 +96,7 @@ async def check_servers(
     game_mode: GameModes = GameModes.TEAMS, port: Optional[str] = None,
 ) -> AsyncGenerator[Tuple[str, parser.Server], None]:
     done_list = set()
-    for region in REGION_LIST:
+    for region in REGION_LIST: 
         uri, token, _ = await get_hosts(region, game_mode)
         uri = change_port(uri, port)
         if uri not in done_list:

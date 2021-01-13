@@ -4,26 +4,53 @@ from discord import Embed, Colour
 from discord.ext.commands import Context
 
 from parser import Player, Team, Server
+import defly_check
 
 import json
-import worker
-from enum import Enum
 
-from typing import Any, List, Optional, Set, Tuple
+from enum import IntEnum
+import dataclasses
+
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 
-class Logger(Enum):
+class Logger(IntEnum):
     CHECK_SERVER = 0
     CHECK_SERVERS = 1
     SEARCH_PLAYER = 2
     CHECK_LIST = 3
     GET_LIST = 4
     ADD_PLAYER = 5
-    HELP = 6
-    GET_LINK = 7
+    TRIED_TO_ADD = 6
+    REMOVE_PLAYER = 7
+    HELP = 8
+    GET_LINK = 9
 
+class EnhancedJSONEncoder(json.JSONEncoder):
+    def default(self, o):
+        if dataclasses.is_dataclass(o):
+            return dataclasses.asdict(o)
+        return super().default(o)
+
+@dataclasses.dataclass
+class TrollTrace():
+    log_type: Logger
+    sus: str
+    victim: str
+
+    def into_str(self):
+        return f"**LOG**: `{self.sus}` -> `{self.log_type.name}` -> `{self.victim}`"
+
+    @classmethod
+    def from_dict(cls, elems):
+        return cls(
+            log_type=Logger(elems["log_type"]),
+            sus=elems["sus"],
+            victim=elems["victim"],
+        )
 
 TRACK_LIST = "good_players.json"
+LOG_LIST = "track_logs.json"
 
 REGIONS = dict(
     EU1="eu1-1",
@@ -134,7 +161,7 @@ async def check_tracklist(ctx: Context, tracklist: Set[str]) -> None:
         done = True
         _len = len(players) > 1
         await ctx.send(
-            f"ya ya, {', '.join(f'`{player}`' for player in players)} {'are' if _len else 'is'} online lets go kill {'them' if _len else 'him/her'}"
+            f"ya ya, {', '.join(f'`{player}`' for player in players)} {'are' if _len else 'is'} online lets go 🥺👉👈 {'them' if _len else 'him/her'}"
         )
         await send_server(ctx, header, server)
     else:
@@ -147,10 +174,21 @@ def logger(ctx: Context, _type: Logger) -> None:
 
 
 def load_tracklist() -> Set[str]:
-    fp = open(TRACK_LIST)
-    return set(json.load(fp))
+    with open(TRACK_LIST) as fp:
+        return set(json.load(fp))
+
+def load_loglist() -> Dict[str, List[TrollTrace]]:
+    with open(LOG_LIST) as fp:
+        return {
+            key: [TrollTrace.from_dict(elem) for elem in value]
+            for key, value in json.load(fp).items()
+        }
 
 
+async def save_loglist(logs:  Dict[str, List[TrollTrace]]):
+    async with aiof.open(LOG_LIST, "w") as out:
+        await out.write(json.dumps(logs, cls=EnhancedJSONEncoder))
+        
 async def save_tracklist(tracklist: Set[str]):
     async with aiof.open(TRACK_LIST, "w") as out:
         await out.write(json.dumps(list(tracklist)))
@@ -203,7 +241,7 @@ async def search_player(ctx: Context, args: Tuple[Any, ...]) -> None:
         if username != "Player":
             if _data := await worker.search_player(username, bot=True):
                 header, server = _data
-                await ctx.send(f"ya ya, {username} is online lets go kill him")
+                await ctx.send(f"ya ya, {username} is online lets go 🥺🥺🥺👉👈 him/her")
                 await send_server(ctx, header, server)
             else:
                 await ctx.send("no he/she is not online :(")
@@ -235,3 +273,4 @@ async def check_servers(ctx: Context, port: Optional[str] = None):
     else:
         for _port in worker.KNOWN_PORTS:
             await _check_servers(ctx, _port)
+

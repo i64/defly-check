@@ -3,7 +3,7 @@ from typing import Any
 
 
 class DataView:
-    def __init__(self, array):
+    def __init__(self, array, bytes_per_element=1):
         if isinstance(array, bytearray):
             self.array = array
         else:
