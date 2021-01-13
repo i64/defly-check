@@ -157,7 +157,7 @@ def get_table(titles: Any, rows: List[List[str]]) -> str:
 
 async def check_tracklist(ctx: Context, tracklist: Set[str]) -> None:
     done = False
-    async for players, header, server in worker._gen_check_tracklist(tracklist):
+    async for players, header, server in defly_check._gen_check_tracklist(tracklist):
         done = True
         _len = len(players) > 1
         await ctx.send(
@@ -201,7 +201,7 @@ def quote(data: str, f_format: Optional[str] = None) -> str:
 
 
 def get_link(
-    region: str, port: str, game_mode: worker.GameModes = worker.GameModes.TEAMS
+    region: str, port: str, game_mode: defly_check.GameModes = defly_check.GameModes.TEAMS
 ):
     if region_id := REGIONS.get(region.upper()):
         return f"https://defly.io/#{game_mode.value}-{region_id}.:{port}"
@@ -230,7 +230,7 @@ async def send_server(ctx: Context, header: str, server: Server) -> None:
 
 
 async def _check_servers(ctx: Context, port: Optional[str] = None) -> None:
-    async for uri, server in worker.check_servers(port=port):
+    async for uri, server in defly_check.check_servers(port=port):
         if server:
             await send_server(ctx, uri, server)
 
@@ -239,7 +239,7 @@ async def search_player(ctx: Context, args: Tuple[Any, ...]) -> None:
     username = " ".join(args)
     if username:
         if username != "Player":
-            if _data := await worker.search_player(username, bot=True):
+            if _data := await defly_check.search_player(username, bot=True):
                 header, server = _data
                 await ctx.send(f"ya ya, {username} is online lets go 🥺🥺🥺👉👈 him/her")
                 await send_server(ctx, header, server)
@@ -254,11 +254,11 @@ async def search_player(ctx: Context, args: Tuple[Any, ...]) -> None:
 async def check_server(ctx: Context, region: str, port: Optional[int] = None) -> None:
     if (region := region.upper()) in REGION_NAMES:
         if port:
-            _, data = await worker.check_server(region, port=port, bot=True)  # type: ignore
+            _, data = await defly_check.check_server(region, port=port, bot=True)  # type: ignore
             await send_server(ctx, f"{region} {port}", data)
         else:
-            for _port in worker.KNOWN_PORTS:
-                uri, data = await worker.check_server(region, port=_port, bot=True)  # type: ignore
+            for _port in defly_check.KNOWN_PORTS:
+                uri, data = await defly_check.check_server(region, port=_port, bot=True)  # type: ignore
                 if data:
                     await send_server(ctx, uri, data)
                 else:
@@ -271,6 +271,6 @@ async def check_servers(ctx: Context, port: Optional[str] = None):
     if port:
         await _check_servers(ctx, port)
     else:
-        for _port in worker.KNOWN_PORTS:
+        for _port in defly_check.KNOWN_PORTS:
             await _check_servers(ctx, _port)
 
